@@ -1,0 +1,316 @@
+{
+  "collected_at": "2026-06-07",
+  "previous_collected_at": "2025-06-07",
+  "groups": [
+    {
+      "slug": "own_brand_chopped_tomatoes_standard_400g",
+      "display_name": "Own-brand chopped tomatoes 400g",
+      "unit_basis": "kg",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Chopped Tomatoes 400G",
+          "current": { "price": "0.55", "normalised_size": "0.4" },
+          "previous_year": { "price": "0.35", "normalised_size": "0.4" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Chopped Tomatoes 400g",
+          "current": { "price": "0.39", "normalised_size": "0.4" },
+          "previous_year": { "price": "0.37", "normalised_size": "0.4" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Chopped Tomatoes 400g",
+          "current": { "price": "0.42", "normalised_size": "0.4" },
+          "previous_year": { "price": "0.39", "normalised_size": "0.4" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Chopped Tomatoes 400g",
+          "current": { "price": "0.45", "normalised_size": "0.4" },
+          "previous_year": { "price": "0.40", "normalised_size": "0.4" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_semi_skimmed_milk_4_pints",
+      "display_name": "Own-brand semi-skimmed milk 4 pints",
+      "unit_basis": "litre",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco British Semi Skimmed Milk 4 Pints",
+          "current": { "price": "1.65", "normalised_size": "2.272" },
+          "previous_year": { "price": "1.55", "normalised_size": "2.272" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Semi Skimmed Milk 4 Pints",
+          "current": { "price": "1.55", "normalised_size": "2.272" },
+          "previous_year": { "price": "1.50", "normalised_size": "2.272" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's British Semi Skimmed Milk 4 Pints",
+          "current": { "price": "1.60", "normalised_size": "2.272" },
+          "previous_year": { "price": "1.52", "normalised_size": "2.272" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Semi Skimmed Milk 4 Pints",
+          "current": { "price": "1.58", "normalised_size": "2.272" },
+          "previous_year": { "price": "1.50", "normalised_size": "2.272" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_mature_cheddar_standard_550g",
+      "display_name": "Own-brand mature cheddar 550g",
+      "unit_basis": "kg",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Mature Cheddar 550g",
+          "current": { "price": "3.50", "normalised_size": "0.55" },
+          "previous_year": { "price": "3.20", "normalised_size": "0.55" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Mature Cheddar 550g",
+          "current": { "price": "3.25", "normalised_size": "0.55" },
+          "previous_year": { "price": "3.10", "normalised_size": "0.55" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Mature British Cheddar 550g",
+          "current": { "price": "4.25", "normalised_size": "0.55" },
+          "previous_year": { "price": "3.25", "normalised_size": "0.55" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Mature Cheddar 550g",
+          "current": { "price": "3.40", "normalised_size": "0.55" },
+          "previous_year": { "price": "3.15", "normalised_size": "0.55" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_penne_pasta_standard_500g",
+      "display_name": "Own-brand penne pasta 500g",
+      "unit_basis": "kg",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Penne Pasta 500g",
+          "current": { "price": "0.95", "normalised_size": "0.5" },
+          "previous_year": { "price": "0.70", "normalised_size": "0.5" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Penne Pasta 500g",
+          "current": { "price": "0.75", "normalised_size": "0.5" },
+          "previous_year": { "price": "0.72", "normalised_size": "0.5" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Penne Pasta 500g",
+          "current": { "price": "0.80", "normalised_size": "0.5" },
+          "previous_year": { "price": "0.74", "normalised_size": "0.5" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Penne Pasta 500g",
+          "current": { "price": "0.78", "normalised_size": "0.5" },
+          "previous_year": { "price": "0.73", "normalised_size": "0.5" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_baked_beans_standard_410g",
+      "display_name": "Own-brand baked beans 410g",
+      "unit_basis": "kg",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Baked Beans 410g",
+          "current": { "price": "0.45", "normalised_size": "0.41" },
+          "previous_year": { "price": "0.43", "normalised_size": "0.41" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Baked Beans 410g",
+          "current": { "price": "0.62", "normalised_size": "0.41" },
+          "previous_year": { "price": "0.40", "normalised_size": "0.41" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Baked Beans 410g",
+          "current": { "price": "0.48", "normalised_size": "0.41" },
+          "previous_year": { "price": "0.44", "normalised_size": "0.41" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Baked Beans 410g",
+          "current": { "price": "0.47", "normalised_size": "0.41" },
+          "previous_year": { "price": "0.43", "normalised_size": "0.41" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_cornflakes_standard_500g",
+      "display_name": "Own-brand cornflakes 500g",
+      "unit_basis": "kg",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Corn Flakes 500g",
+          "current": { "price": "2.50", "normalised_size": "0.5" },
+          "previous_year": { "price": "2.40", "normalised_size": "0.5" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Corn Flakes 500g",
+          "current": { "price": "2.20", "normalised_size": "0.5" },
+          "previous_year": { "price": "2.10", "normalised_size": "0.5" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Corn Flakes 500g",
+          "current": { "price": "2.30", "normalised_size": "0.5" },
+          "previous_year": { "price": "2.15", "normalised_size": "0.5" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Corn Flakes 500g",
+          "current": { "price": "2.25", "normalised_size": "0.5" },
+          "previous_year": { "price": "2.12", "normalised_size": "0.5" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_salted_butter_250g",
+      "display_name": "Own-brand salted butter 250g",
+      "unit_basis": "kg",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Salted Butter 250g",
+          "current": { "price": "2.05", "normalised_size": "0.25" },
+          "previous_year": { "price": "1.95", "normalised_size": "0.25" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Salted Butter 250g",
+          "current": { "price": "2.00", "normalised_size": "0.25" },
+          "previous_year": { "price": "1.92", "normalised_size": "0.25" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Salted Butter 250g",
+          "current": { "price": "2.10", "normalised_size": "0.25" },
+          "previous_year": { "price": "1.98", "normalised_size": "0.25" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Salted Butter 250g",
+          "current": { "price": "2.40", "normalised_size": "0.25" },
+          "previous_year": { "price": "1.80", "normalised_size": "0.25" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_toilet_roll_standard_9_rolls",
+      "display_name": "Own-brand toilet roll 9 rolls",
+      "unit_basis": "roll",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Soft Toilet Tissue 9 Rolls",
+          "current": { "price": "5.50", "normalised_size": "9" },
+          "previous_year": { "price": "5.20", "normalised_size": "9" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Soft Toilet Tissue 9 Rolls",
+          "current": { "price": "6.50", "normalised_size": "9" },
+          "previous_year": { "price": "5.00", "normalised_size": "9" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Soft Toilet Tissue 9 Rolls",
+          "current": { "price": "5.70", "normalised_size": "9" },
+          "previous_year": { "price": "5.30", "normalised_size": "9" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Soft Toilet Tissue 9 Rolls",
+          "current": { "price": "5.60", "normalised_size": "9" },
+          "previous_year": { "price": "5.25", "normalised_size": "9" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_washing_capsules_30_washes",
+      "display_name": "Own-brand washing capsules 30 washes",
+      "unit_basis": "wash",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Bio Washing Capsules 30 Washes",
+          "current": { "price": "9.00", "normalised_size": "30" },
+          "previous_year": { "price": "6.50", "normalised_size": "30" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Bio Washing Capsules 30 Washes",
+          "current": { "price": "7.00", "normalised_size": "30" },
+          "previous_year": { "price": "6.60", "normalised_size": "30" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Bio Washing Capsules 30 Washes",
+          "current": { "price": "7.20", "normalised_size": "30" },
+          "previous_year": { "price": "6.70", "normalised_size": "30" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Bio Washing Capsules 30 Washes",
+          "current": { "price": "7.10", "normalised_size": "30" },
+          "previous_year": { "price": "6.65", "normalised_size": "30" }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_dishwasher_tablets_30_tablets",
+      "display_name": "Own-brand dishwasher tablets 30 tablets",
+      "unit_basis": "tablet",
+      "observations": [
+        {
+          "retailer": "Tesco",
+          "product_name": "Tesco Dishwasher Tablets 30 Tablets",
+          "current": { "price": "6.00", "normalised_size": "30" },
+          "previous_year": { "price": "5.70", "normalised_size": "30" }
+        },
+        {
+          "retailer": "Asda",
+          "product_name": "Asda Dishwasher Tablets 30 Tablets",
+          "current": { "price": "5.80", "normalised_size": "30" },
+          "previous_year": { "price": "5.60", "normalised_size": "30" }
+        },
+        {
+          "retailer": "Sainsbury's",
+          "product_name": "Sainsbury's Dishwasher Tablets 30 Tablets",
+          "current": { "price": "7.50", "normalised_size": "30" },
+          "previous_year": { "price": "5.00", "normalised_size": "30" }
+        },
+        {
+          "retailer": "Morrisons",
+          "product_name": "Morrisons Dishwasher Tablets 30 Tablets",
+          "current": { "price": "5.90", "normalised_size": "30" },
+          "previous_year": { "price": "5.65", "normalised_size": "30" }
+        }
+      ]
+    }
+  ]
+}
