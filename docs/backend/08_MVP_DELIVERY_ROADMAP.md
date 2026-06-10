@@ -245,9 +245,12 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Start Phase 5 by adding the review queue foundation so needs-review candidates
-are persisted and the final required MVP report (review-required products) can
-be built.
+Complete the required MVP report set with a query-based review-required
+products report over the new `review_queue_items` table.
+The review queue foundation now exists: migration `0003` adds
+`review_queue_items`, and the ingestion persistence plan persists needs-review
+candidates as open review items (linked to product, raw snapshot and proposed
+group) instead of dropping them after the job notes count.
 The query-based reporting layer now covers three of the four required MVP
 reports: group comparison (latest eligible observation per retailer,
 cheapest-first), group price history (eligible observations per retailer over a
@@ -279,5 +282,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add the review queue foundation. Add additive migration 0003_parser_review_and_aggregates.sql with a UUID-based review_queue_items table referencing raw_product_snapshots(id), products(id) where available, and equivalence_groups(id) for the proposed group, with match score, match reason and status. Extend the ingestion persistence plan so needs_review candidates produce review_queue_items row payloads (not product_group_memberships), persisted through the repository. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add a query-based review-required products report. Given a DB-API connection, return open review_queue_items joined to products, retailers, equivalence_groups and raw_product_snapshots, including product title, retailer, proposed group slug, match confidence, match reason, created_at and raw snapshot ID, ordered oldest-first with an optional group slug filter. Add tests with a fake connection. Do not add HTTP endpoints or review decision actions yet.
 ```

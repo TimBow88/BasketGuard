@@ -6,6 +6,7 @@ Database migrations live in `db/migrations/`.
 
 - `0001_initial_schema.sql` creates the initial PostgreSQL schema described in `docs/07_DATABASE_SCHEMA.md`.
 - `0002_data_gathering_workflow.sql` adds collection targets and ingestion job tracking for controlled data gathering.
+- `0003_parser_review_and_aggregates.sql` adds `review_queue_items` so needs-review group match candidates are persisted with status, decision and reviewer notes.
 
 ## Notes
 

@@ -24,10 +24,10 @@
 - [ ] `price_observations` table.
 - [ ] `analytics_findings` table.
 - [ ] `reports` table.
-- [ ] Future `0003`: `parser_versions` table if richer parser release metadata is needed.
-- [ ] Future `0003`: `parsed_product_attributes` table for versioned snapshot parser outputs.
-- [ ] Future `0003`: `review_queue_items` table for richer human-review workflow.
-- [ ] Future `0003`: `daily_equivalence_group_prices` table if materialised aggregates are needed.
+- [ ] Future migration: `parser_versions` table if richer parser release metadata is needed.
+- [ ] Future migration: `parsed_product_attributes` table for versioned snapshot parser outputs.
+- [x] `0003`: `review_queue_items` table for richer human-review workflow.
+- [ ] Future migration: `daily_equivalence_group_prices` table if materialised aggregates are needed.
 
 ## Ingestion
 
@@ -97,7 +97,8 @@
 
 ## Review queue
 
-- [ ] Review candidate is surfaced for uncertain matches.
+- [x] Review candidate is surfaced for uncertain matches.
+- [x] Review candidates persist as `review_queue_items` rows with match score, reason and open status.
 - [ ] Review list endpoint exists.
 - [ ] Review detail endpoint exists.
 - [ ] Approve action exists.
@@ -107,7 +108,7 @@
 - [ ] Reviewer notes are stored.
 - [ ] Review decisions update `product_group_memberships`.
 - [ ] Review decisions can become fixtures.
-- [ ] Future `0003`: full `review_queue_items` audit table exists.
+- [x] `0003`: full `review_queue_items` audit table exists.
 
 ## Price history
 
