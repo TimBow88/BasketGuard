@@ -4,6 +4,11 @@ from .group_comparison import (
     GroupComparisonReport,
     fetch_group_comparison,
 )
+from .group_gaps import (
+    RetailerGap,
+    RetailerGapReport,
+    fetch_retailer_gaps,
+)
 from .group_history import (
     DEFAULT_HISTORY_WINDOW_DAYS,
     GroupPriceHistoryReport,
@@ -20,9 +25,12 @@ __all__ = [
     "GroupComparisonReport",
     "GroupPriceHistoryReport",
     "PriceHistoryPoint",
+    "RetailerGap",
+    "RetailerGapReport",
     "RetailerPriceHistory",
     "fetch_group_comparison",
     "fetch_group_price_history",
+    "fetch_retailer_gaps",
     "generate_weekly_report",
     "render_plain_text_report",
 ]

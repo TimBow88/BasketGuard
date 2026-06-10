@@ -245,12 +245,17 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Continue Phase 3 reporting with a query-based retailer gap report across groups.
-The group comparison report returns the latest eligible observation per retailer
-for one group slug (cheapest-first, with unit price gap and raw snapshot IDs),
-and the group price history report returns eligible observations per retailer
-over a rolling day window. Both exclude needs-review and rejected products and
-share one membership eligibility predicate.
+Start Phase 5 by adding the review queue foundation so needs-review candidates
+are persisted and the final required MVP report (review-required products) can
+be built.
+The query-based reporting layer now covers three of the four required MVP
+reports: group comparison (latest eligible observation per retailer,
+cheapest-first), group price history (eligible observations per retailer over a
+rolling day window), and retailer gaps (cheapest vs dearest unit price per
+group with missing-retailer counts). All three share one membership eligibility
+predicate and exclude needs-review and rejected products. The remaining
+required report, review-required products, needs needs-review candidates to be
+persisted first.
 The group matcher is wired into the ingestion persistence plan: auto-match
 results emit `product_group_memberships` rows with `match_confidence` and
 `match_reason`, while needs-review candidates are surfaced on the plan and in
@@ -274,5 +279,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add a query-based retailer gap report. Given a DB-API connection and a list of equivalence group slugs, return per group the cheapest retailer, most expensive retailer, absolute and percentage unit price gap, observation date, and missing retailer count, using the latest eligible observation per retailer. Reuse the shared group join and membership eligibility rules. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add the review queue foundation. Add additive migration 0003_parser_review_and_aggregates.sql with a UUID-based review_queue_items table referencing raw_product_snapshots(id), products(id) where available, and equivalence_groups(id) for the proposed group, with match score, match reason and status. Extend the ingestion persistence plan so needs_review candidates produce review_queue_items row payloads (not product_group_memberships), persisted through the repository. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
