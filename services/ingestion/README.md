@@ -90,6 +90,27 @@ The mapper uses deterministic UUIDs so relationships can be tested without a liv
 
 `IngestionPlanRepository` accepts a DB-API compatible connection and persists a plan with dependency-ordered `INSERT ... ON CONFLICT (id) DO UPDATE` statements. It commits on success and rolls back on failure. Tests use a fake connection; no PostgreSQL dependency is required yet.
 
+## Group Membership Matching
+
+When `build_ingestion_persistence_plan` is given loaded equivalence group
+definitions (see `load_equivalence_group_definitions` in the
+product-normalisation package), each parsed product is scored against the
+active definitions:
+
+- `auto_match` results emit `product_group_memberships` row payloads with
+  `match_confidence` and a joined `match_reason`, persisted after `products`
+  and `equivalence_groups`;
+- `needs_review` results are surfaced on
+  `IngestionPersistencePlan.group_review_candidates` and counted in the
+  ingestion job notes, but never persisted — a richer review queue belongs to
+  a future `0003` migration;
+- `no_match` results are dropped silently.
+
+Matched groups that are not already present from collection target seeds get
+an `equivalence_groups` row created from the definition (slug, name, unit
+basis, tier). Membership row IDs are deterministic per product/group pair, so
+re-runs upsert instead of duplicating.
+
 `open_postgres_connection` opens a DB-API compatible PostgreSQL connection using `psycopg` or `psycopg2`. It reads `BASKETGUARD_DATABASE_URL` first, then `DATABASE_URL`, unless a URL is passed directly.
 
 ## Pipeline Runner

@@ -68,8 +68,11 @@ def _ordered_plan_rows(plan: IngestionPersistencePlan):
     yield "ingestion_jobs", plan.ingestion_jobs
     yield "raw_product_snapshots", plan.raw_product_snapshots
     yield "products", plan.products
+    yield "product_group_memberships", plan.product_group_memberships
     yield "price_observations", plan.price_observations
     yield "ingestion_job_targets", plan.ingestion_job_targets
+    # plan.group_review_candidates is intentionally not persisted; review rows
+    # belong to a future review_queue_items migration.
 
 
 def _upsert_sql(table_name: str, row: dict[str, Any]) -> str:
