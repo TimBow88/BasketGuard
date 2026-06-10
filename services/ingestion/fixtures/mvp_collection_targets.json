@@ -1,0 +1,28 @@
+{
+  "targets": [
+    {
+      "retailer": "Tesco",
+      "target_name": "Tesco own-brand chopped tomatoes 400g",
+      "target_url": "https://www.tesco.com/groceries/en-GB/products/254879001",
+      "external_product_id": "254879001",
+      "group_slug": "own_brand_chopped_tomatoes_standard_400g",
+      "postcode_context": "MVP default region",
+      "collection_frequency": "daily",
+      "priority": 90,
+      "is_active": true,
+      "notes": "Allowlisted fixture-backed target for parser and snapshot testing."
+    },
+    {
+      "retailer": "Tesco",
+      "target_name": "Tesco own-brand corn flakes 500g",
+      "target_url": "https://www.tesco.com/groceries/en-GB/products/303030001",
+      "external_product_id": "303030001",
+      "group_slug": "own_brand_cornflakes_standard",
+      "postcode_context": "MVP default region",
+      "collection_frequency": "daily",
+      "priority": 90,
+      "is_active": true,
+      "notes": "Allowlisted fixture-backed target for Clubcard-price parser testing."
+    }
+  ]
+}

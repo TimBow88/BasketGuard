@@ -6,12 +6,11 @@ import re
 import time
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
-from urllib.error import HTTPError, URLError
 
 from basketguard_product_normalisation import (
     UnitNormalisationError,
@@ -32,16 +31,16 @@ from .fetcher import FetchError, FetchResponse, SupplierFetcher, UrllibSupplierF
 from .snapshot_store import SnapshotArtifactWriter
 
 
-TESCO_FEATURE_FLAG = "BASKETGUARD_ENABLE_TESCO_SCRAPER"
-TESCO_PARSER_VERSION = "tesco-html-v1"
+ASDA_FEATURE_FLAG = "BASKETGUARD_ENABLE_ASDA_SCRAPER"
+ASDA_PARSER_VERSION = "asda-html-v1"
 
 
-class TescoParseError(ValueError):
+class AsdaParseError(ValueError):
     pass
 
 
 @dataclass(frozen=True)
-class TescoScraperConfig:
+class AsdaScraperConfig:
     allowlisted_urls: tuple[str, ...]
     enabled: bool = False
     postcode_context: str | None = "MVP default region"
@@ -52,10 +51,8 @@ class TescoScraperConfig:
     fetcher: SupplierFetcher = field(default_factory=UrllibSupplierFetcher)
 
 
-class TescoProductPageParser:
-    """Parse saved Tesco product HTML into BasketGuard ingestion records."""
-
-    retailer = "Tesco"
+class AsdaProductPageParser:
+    retailer = "Asda"
 
     def extract(self, html: str, url: str | None) -> ExtractedProduct:
         document = _DataTestIdParser()
@@ -65,7 +62,7 @@ class TescoProductPageParser:
         name = (
             _first_text(document.data_text, "product-title", "product-name", "title")
             or json_ld_product.get("name")
-            or _meta(document.meta, "og:title")
+            or document.meta.get("og:title")
         )
         price_text = (
             _first_text(document.data_text, "price", "product-price", "current-price")
@@ -83,13 +80,8 @@ class TescoProductPageParser:
             category_breadcrumb=_first_text(document.data_text, "breadcrumb", "breadcrumbs"),
             image_url=_image_url(json_ld_product, document.meta),
             availability=_availability(json_ld_product, document.data_text),
-            promotion_text=_first_text(
-                document.data_text,
-                "promotion-text",
-                "promo-text",
-                "offer-text",
-            ),
-            external_product_id=_external_product_id(url, html),
+            promotion_text=_first_text(document.data_text, "promotion-text", "promo-text", "offer-text"),
+            external_product_id=_external_product_id(url, html, json_ld_product),
             raw_fields=_raw_fields(document),
         )
 
@@ -103,27 +95,16 @@ class TescoProductPageParser:
         extracted = self.extract(html, url)
         name = extracted.title
         if not name:
-            raise TescoParseError("Missing product title")
+            raise AsdaParseError("Missing product title")
 
         external_product_id = extracted.external_product_id
         shelf_price_text = extracted.price
         shelf_price = _parse_money(shelf_price_text)
 
-        loyalty_price_text = (
-            extracted.raw_fields.get("clubcard-price")
-            or extracted.raw_fields.get("loyalty-price")
-            or extracted.raw_fields.get("member-price")
-        )
-        loyalty_price = _parse_money(loyalty_price_text) if loyalty_price_text else None
-        effective_price = loyalty_price or shelf_price
-
         unit_price_text = extracted.unit_price_text
         unit_price, unit_price_basis = _parse_unit_price(unit_price_text)
-
         promotion_text = extracted.promotion_text
         breadcrumb = extracted.category_breadcrumb
-        availability = extracted.availability
-        raw_pack_size_text = extracted.pack_size_text
         pack_size = parse_pack_size(name)
         normalised_size = normalise_pack_size(name)
         flags = classify_product_flags(name, retailer=self.retailer)
@@ -136,10 +117,10 @@ class TescoProductPageParser:
             raw_price_text=shelf_price_text or "",
             raw_unit_price_text=unit_price_text or "",
             raw_promo_text=promotion_text,
-            raw_pack_size_text=raw_pack_size_text,
+            raw_pack_size_text=f"{pack_size.amount}{pack_size.unit}",
             postcode_context=postcode_context,
             collection_status="succeeded",
-            parser_version=TESCO_PARSER_VERSION,
+            parser_version=ASDA_PARSER_VERSION,
             collected_at=collected_at,
         )
 
@@ -169,14 +150,14 @@ class TescoProductPageParser:
             retailer=self.retailer,
             external_product_id=external_product_id,
             shelf_price=shelf_price,
-            loyalty_price=loyalty_price,
+            loyalty_price=None,
             was_price=None,
-            effective_price=effective_price,
+            effective_price=shelf_price,
             unit_price=unit_price,
             unit_price_basis=unit_price_basis,
-            promo_type="loyalty" if loyalty_price is not None else None,
+            promo_type=None,
             promo_description=promotion_text,
-            availability=availability,
+            availability=extracted.availability,
             postcode_context=postcode_context,
             collected_at=collected_at,
         )
@@ -184,26 +165,26 @@ class TescoProductPageParser:
         return raw_snapshot, parsed_product, price_observation
 
 
-class TescoIngestionProvider:
-    provider_name = "tesco"
+class AsdaIngestionProvider:
+    provider_name = "asda"
 
-    def __init__(self, config: TescoScraperConfig) -> None:
+    def __init__(self, config: AsdaScraperConfig) -> None:
         self.config = config
-        self.parser = TescoProductPageParser()
+        self.parser = AsdaProductPageParser()
 
     def collect(self) -> IngestionJobResult:
         if not self._enabled():
             return IngestionJobResult(
                 provider_name=self.provider_name,
-                job_type="tesco_allowlisted_product_collection",
+                job_type="asda_allowlisted_product_collection",
                 status="failed",
-                retailer="Tesco",
+                retailer="Asda",
                 target_count=len(self.config.allowlisted_urls),
                 collected_count=0,
                 parser_error_count=0,
                 missing_price_count=0,
                 notes=(
-                    f"Tesco live scraping is disabled. Set {TESCO_FEATURE_FLAG}=1 "
+                    f"Asda live scraping is disabled. Set {ASDA_FEATURE_FLAG}=1 "
                     "and provide explicit allowlisted URLs to run it."
                 ),
             )
@@ -243,22 +224,14 @@ class TescoIngestionProvider:
                         raw_snapshot_external_product_id=raw_snapshot.external_product_id,
                     ),
                 )
-            except (
-                FetchError,
-                HTTPError,
-                URLError,
-                TimeoutError,
-                TescoParseError,
-                UnitNormalisationError,
-                ValueError,
-            ) as error:
+            except (FetchError, AsdaParseError, UnitNormalisationError, ValueError) as error:
                 parser_error_count += 1
                 missing_price_count += 1
                 collection_attempts.append(
                     CollectionAttempt(
                         retailer=self.parser.retailer,
                         target_url=url,
-                        external_product_id=_external_product_id(url, ""),
+                        external_product_id=_external_product_id(url, "", {}),
                         status="failed",
                         attempted_at=collected_at,
                         error_code=_error_code(error),
@@ -274,9 +247,9 @@ class TescoIngestionProvider:
 
         return IngestionJobResult(
             provider_name=self.provider_name,
-            job_type="tesco_allowlisted_product_collection",
+            job_type="asda_allowlisted_product_collection",
             status=status,
-            retailer="Tesco",
+            retailer="Asda",
             target_count=len(self.config.allowlisted_urls),
             collected_count=len(price_observations),
             parser_error_count=parser_error_count,
@@ -285,11 +258,11 @@ class TescoIngestionProvider:
             parsed_products=parsed_products,
             price_observations=price_observations,
             collection_attempts=collection_attempts,
-            notes="Live Tesco collection ran against explicit allowlisted URLs.",
+            notes="Live Asda collection ran against explicit allowlisted URLs.",
         )
 
     def _enabled(self) -> bool:
-        return self.config.enabled and os.environ.get(TESCO_FEATURE_FLAG) == "1"
+        return self.config.enabled and os.environ.get(ASDA_FEATURE_FLAG) == "1"
 
     def _fetch(self, url: str) -> FetchResponse | str:
         return self.config.fetcher.fetch(
@@ -352,10 +325,6 @@ def _first_text(data_text: dict[str, list[str]], *keys: str) -> str | None:
         if values:
             return " ".join(values)
     return None
-
-
-def _meta(meta: dict[str, str], key: str) -> str | None:
-    return meta.get(key)
 
 
 def _extract_json_ld_product(payloads: list[str]) -> dict[str, Any]:
@@ -422,6 +391,14 @@ def _raw_fields(document: _DataTestIdParser) -> dict[str, str]:
     return fields
 
 
+def _pack_size_text(name: str) -> str | None:
+    try:
+        parsed = parse_pack_size(name)
+    except UnitNormalisationError:
+        return None
+    return f"{parsed.amount}{parsed.unit}"
+
+
 def _availability(product: dict[str, Any], data_text: dict[str, list[str]]) -> str:
     availability_text = str(product.get("offers", {}).get("availability", "")).lower()
     page_text = " ".join(" ".join(values) for values in data_text.values()).lower()
@@ -434,9 +411,9 @@ def _availability(product: dict[str, Any], data_text: dict[str, list[str]]) -> s
 
 def _parse_money(text: str | None) -> Decimal:
     if not text:
-        raise TescoParseError("Missing money value")
+        raise AsdaParseError("Missing money value")
     compact = text.replace(",", "").strip()
-    pound_match = re.search(r"(?:GBP|£)\s*(\d+(?:\.\d+)?)", compact, re.IGNORECASE)
+    pound_match = re.search(r"(?:GBP|Â£|£)\s*(\d+(?:\.\d+)?)", compact, re.IGNORECASE)
     if pound_match:
         return Decimal(pound_match.group(1))
     pence_match = re.search(r"\b(\d+(?:\.\d+)?)\s*p\b", compact, re.IGNORECASE)
@@ -445,19 +422,19 @@ def _parse_money(text: str | None) -> Decimal:
     number_match = re.search(r"\b(\d+(?:\.\d+)?)\b", compact)
     if number_match:
         return Decimal(number_match.group(1))
-    raise TescoParseError(f"Could not parse money value: {text!r}")
+    raise AsdaParseError(f"Could not parse money value: {text!r}")
 
 
 def _parse_unit_price(text: str | None) -> tuple[Decimal, str]:
     if not text:
-        raise TescoParseError("Missing unit price")
+        raise AsdaParseError("Missing unit price")
     match = re.search(
-        r"((?:GBP|£)?\s*\d+(?:\.\d+)?\s*p?)\s*/\s*(100g|kg|g|litre|l|each|roll|wash|tablet)",
+        r"((?:GBP|Â£|£)?\s*\d+(?:\.\d+)?\s*p?)\s*/\s*(100g|kg|g|litre|l|each|roll|wash|tablet)",
         text,
         re.IGNORECASE,
     )
     if not match:
-        raise TescoParseError(f"Could not parse unit price: {text!r}")
+        raise AsdaParseError(f"Could not parse unit price: {text!r}")
     return _parse_money(match.group(1)), _normalise_unit_basis(match.group(2))
 
 
@@ -468,26 +445,21 @@ def _normalise_unit_basis(unit: str) -> str:
     return unit_key
 
 
-def _pack_size_text(name: str) -> str | None:
-    try:
-        parsed = parse_pack_size(name)
-    except UnitNormalisationError:
-        return None
-    return f"{parsed.amount}{parsed.unit}"
-
-
 def _category_from_breadcrumb(breadcrumb: str | None) -> str | None:
     if not breadcrumb:
         return None
     return breadcrumb.split(">")[0].strip()
 
 
-def _external_product_id(url: str | None, html: str) -> str | None:
+def _external_product_id(url: str | None, html: str, product: dict[str, Any]) -> str | None:
     if url:
-        product_match = re.search(r"/products/(\d+)", url)
+        product_match = re.search(r"(\d+)(?:[/?#].*)?$", url)
         if product_match:
             return product_match.group(1)
-    id_match = re.search(r'"productId"\s*:\s*"?(?P<id>\d+)"?', html)
+    for key in ("sku", "productId", "productID"):
+        if product.get(key) is not None:
+            return str(product[key])
+    id_match = re.search(r'"(?:sku|productId)"\s*:\s*"?(?P<id>\d+)"?', html)
     if id_match:
         return id_match.group("id")
     return None
@@ -496,13 +468,7 @@ def _external_product_id(url: str | None, html: str) -> str | None:
 def _error_code(error: Exception) -> str:
     if isinstance(error, FetchError):
         return error.error_code
-    if isinstance(error, HTTPError):
-        return f"http_{error.code}"
-    if isinstance(error, URLError):
-        return "url_error"
-    if isinstance(error, TimeoutError):
-        return "timeout"
-    if isinstance(error, TescoParseError):
+    if isinstance(error, AsdaParseError):
         return "parse_error"
     if isinstance(error, UnitNormalisationError):
         return "unit_normalisation_error"

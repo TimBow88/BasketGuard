@@ -182,11 +182,16 @@ Current suite covers:
 
 1. analytics;
 2. product normalisation;
-3. ingestion contracts;
-4. Tesco parser;
-5. reporting;
-6. seed fixtures;
-7. static UI asset checks.
+3. ingestion contracts and allowlisted collection targets;
+4. Tesco and Asda parsers/providers;
+5. fetcher abstraction;
+6. snapshot artifact store;
+7. database row mapping and repository persistence;
+8. ingestion pipeline, local persistence command and supplier batch workflow;
+9. reporting;
+10. seed fixtures;
+11. static UI asset checks;
+12. gated live PostgreSQL integration (skipped unless `BASKETGUARD_RUN_POSTGRES_INTEGRATION=1`).
 
 ## Database Migration Policy
 
@@ -214,6 +219,18 @@ For Tesco, live collection requires both:
 TescoScraperConfig.enabled = true
 BASKETGUARD_ENABLE_TESCO_SCRAPER = 1
 ```
+
+For Asda, live collection requires both:
+
+```text
+AsdaScraperConfig.enabled = true
+BASKETGUARD_ENABLE_ASDA_SCRAPER = 1
+```
+
+Any new retailer must follow the same pattern: a provider config flag plus a
+`BASKETGUARD_ENABLE_<RETAILER>_SCRAPER` environment flag, with fixture-backed
+parser tests before live collection is enabled. Unsupported retailers in seed
+files are staged as skipped attempts, never fetched.
 
 Rules:
 
@@ -266,13 +283,8 @@ git reset --hard
 
 unless the exact consequence is understood and explicitly approved.
 
-## Current Project Import Checklist
+## Initial Import Status
 
-Before the first push:
+The initial import is complete: `main` (commit `aac9eff`, "Initial BasketGuard prototype") is pushed to `origin` and verified on GitHub.
 
-1. configure Git identity;
-2. run the full test suite;
-3. review `git status --short`;
-4. create the first commit;
-5. push `main` to `origin`;
-6. verify the files appear in GitHub.
+All work after that commit must follow the branching rules above: create a short feature branch, run the full test suite, and merge to `main` through a pull request. Substantial local work accumulated directly on `main` should be moved to a feature branch before committing.
