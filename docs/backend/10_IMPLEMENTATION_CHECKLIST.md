@@ -49,16 +49,16 @@
 
 ## Extraction
 
-- [ ] Shared `ExtractedProduct` schema exists.
-- [ ] Extractor interface exists.
+- [x] Shared `ExtractedProduct` schema exists.
+- [x] Extractor interface exists.
 - [x] First retailer extractor exists.
 - [x] Second retailer extractor exists for Asda fixture HTML.
 - [x] Extraction tests use recorded fixtures.
-- [ ] Missing title is flagged.
-- [ ] Missing price is flagged.
-- [ ] Missing unit price is flagged.
-- [ ] Missing category breadcrumb is flagged.
-- [ ] Missing image URL is flagged where required.
+- [x] Missing title is flagged (via `ExtractedProduct.missing_fields` and failed parse attempts).
+- [x] Missing price is flagged (via `ExtractedProduct.missing_fields` and failed parse attempts).
+- [x] Missing unit price is flagged (via `ExtractedProduct.missing_fields` and failed parse attempts).
+- [x] Missing category breadcrumb is flagged via `ExtractedProduct.missing_fields`.
+- [x] Missing image URL is flagged via `ExtractedProduct.missing_fields`.
 
 ## Normalisation
 

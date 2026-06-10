@@ -245,8 +245,11 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Continue Phase 1 by hardening product extraction contracts and adding one more
-Asda fixture variant.
+Start Phase 2 by adding structured equivalence group definition fixtures and a
+validated loader.
+The shared `ExtractedProduct` contract is now produced by both the Tesco and
+Asda parsers, with missing extraction fields flagged and an Asda
+missing-price fixture proving the parser-failure path.
 The local single-URL Tesco persistence command now proves the path from
 allowlisted URL to raw snapshot, parsed product, `price_observations` row payload
 and repository-backed PostgreSQL save. Failed fetches and parser failures are
@@ -259,5 +262,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Introduce a shared extracted-product contract used by Tesco and Asda parsers. Keep raw retailer parser outputs preserved, add one additional Asda fixture variant with a parser failure case, and continue to avoid category crawling or product discovery.
+Add structured equivalence group definition fixtures for own_brand_cornflakes_standard and own_brand_porridge_oats_standard, including required attributes, exclude terms, size ranges, unit basis, risk level and match thresholds. Add a loader with schema validation and tests. Do not add a broad food taxonomy or category crawling.
 ```

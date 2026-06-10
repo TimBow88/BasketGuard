@@ -5,6 +5,7 @@ Contracts and providers for collecting retailer product observations.
 Current scope:
 
 - typed ingestion contracts;
+- a shared `ExtractedProduct` extraction contract produced by all retailer parsers;
 - allowlisted collection target seed loading;
 - fixture-backed mock provider;
 - Tesco HTML parser and disabled-by-default allowlisted provider;
@@ -34,6 +35,21 @@ services/ingestion/fixtures/mvp_collection_targets.json
 ```
 
 Load them with `load_collection_targets`. The seed format maps to the current `collection_targets` table vocabulary: retailer, target name, target URL, external product ID, equivalence group slug, postcode context, collection frequency, priority and active state.
+
+## Shared Extraction Contract
+
+Both `TescoProductPageParser` and `AsdaProductPageParser` expose an
+`extract(html, url)` method returning the retailer-neutral `ExtractedProduct`
+contract (title, brand, raw price text, currency, unit price text, pack size
+text, category breadcrumb, image URL, availability, promotion text, external
+product ID and a `raw_fields` map preserving retailer-specific selector
+values such as Tesco Clubcard prices).
+
+`ExtractedProduct.missing_fields` flags absent title, price, unit price,
+category breadcrumb and image URL. `parse()` consumes the extracted contract
+and still raises retailer parse errors for missing required fields, so failed
+attempts continue to be recorded in `ingestion_job_targets`. The fixture
+`asda_porridge_oats_missing_price.html` covers the parser-failure path.
 
 ## Snapshot Artifacts
 

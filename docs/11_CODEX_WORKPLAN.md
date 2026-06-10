@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Introduce a shared extracted-product contract used by Tesco and Asda parsers. Keep raw retailer parser outputs preserved, add one additional Asda fixture variant with a parser failure case, and continue to avoid category crawling or product discovery.
+Add structured equivalence group definition fixtures for own_brand_cornflakes_standard and own_brand_porridge_oats_standard, including required attributes, exclude terms, size ranges, unit basis, risk level and match thresholds. Add a loader with schema validation and tests. Do not add a broad food taxonomy or category crawling.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)

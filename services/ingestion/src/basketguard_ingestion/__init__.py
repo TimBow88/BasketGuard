@@ -1,9 +1,11 @@
 from .contracts import (
     CollectionAttempt,
     CollectionTarget,
+    ExtractedProduct,
     IngestionJobResult,
     ParsedProduct,
     PriceObservation,
+    ProductExtractor,
     RawProductSnapshot,
 )
 from .asda_provider import (
@@ -57,6 +59,8 @@ __all__ = [
     "AsdaProductPageParser",
     "AsdaScraperConfig",
     "DATABASE_URL_ENV",
+    "ExtractedProduct",
+    "ProductExtractor",
     "FetchError",
     "FetchHttpStatusError",
     "FetchResponse",

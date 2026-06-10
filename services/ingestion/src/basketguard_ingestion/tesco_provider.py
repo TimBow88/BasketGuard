@@ -22,6 +22,7 @@ from basketguard_product_normalisation import (
 
 from .contracts import (
     CollectionAttempt,
+    ExtractedProduct,
     IngestionJobResult,
     ParsedProduct,
     PriceObservation,
@@ -56,13 +57,7 @@ class TescoProductPageParser:
 
     retailer = "Tesco"
 
-    def parse(
-        self,
-        html: str,
-        url: str | None,
-        collected_at: str,
-        postcode_context: str | None = None,
-    ) -> tuple[RawProductSnapshot, ParsedProduct, PriceObservation]:
+    def extract(self, html: str, url: str | None) -> ExtractedProduct:
         document = _DataTestIdParser()
         document.feed(html)
 
@@ -72,37 +67,63 @@ class TescoProductPageParser:
             or json_ld_product.get("name")
             or _meta(document.meta, "og:title")
         )
-        if not name:
-            raise TescoParseError("Missing product title")
-
-        external_product_id = _external_product_id(url, html)
-        shelf_price_text = (
+        price_text = (
             _first_text(document.data_text, "price", "product-price", "current-price")
             or _json_ld_price(json_ld_product)
         )
+        return ExtractedProduct(
+            retailer=self.retailer,
+            source_url=url,
+            title=name,
+            brand=_json_ld_brand(json_ld_product),
+            price=price_text,
+            currency=_currency(json_ld_product, price_text),
+            unit_price_text=_first_text(document.data_text, "unit-price", "price-per-unit"),
+            pack_size_text=_pack_size_text(name) if name else None,
+            category_breadcrumb=_first_text(document.data_text, "breadcrumb", "breadcrumbs"),
+            image_url=_image_url(json_ld_product, document.meta),
+            availability=_availability(json_ld_product, document.data_text),
+            promotion_text=_first_text(
+                document.data_text,
+                "promotion-text",
+                "promo-text",
+                "offer-text",
+            ),
+            external_product_id=_external_product_id(url, html),
+            raw_fields=_raw_fields(document),
+        )
+
+    def parse(
+        self,
+        html: str,
+        url: str | None,
+        collected_at: str,
+        postcode_context: str | None = None,
+    ) -> tuple[RawProductSnapshot, ParsedProduct, PriceObservation]:
+        extracted = self.extract(html, url)
+        name = extracted.title
+        if not name:
+            raise TescoParseError("Missing product title")
+
+        external_product_id = extracted.external_product_id
+        shelf_price_text = extracted.price
         shelf_price = _parse_money(shelf_price_text)
 
-        loyalty_price_text = _first_text(
-            document.data_text,
-            "clubcard-price",
-            "loyalty-price",
-            "member-price",
+        loyalty_price_text = (
+            extracted.raw_fields.get("clubcard-price")
+            or extracted.raw_fields.get("loyalty-price")
+            or extracted.raw_fields.get("member-price")
         )
         loyalty_price = _parse_money(loyalty_price_text) if loyalty_price_text else None
         effective_price = loyalty_price or shelf_price
 
-        unit_price_text = _first_text(document.data_text, "unit-price", "price-per-unit")
+        unit_price_text = extracted.unit_price_text
         unit_price, unit_price_basis = _parse_unit_price(unit_price_text)
 
-        promotion_text = _first_text(
-            document.data_text,
-            "promotion-text",
-            "promo-text",
-            "offer-text",
-        )
-        breadcrumb = _first_text(document.data_text, "breadcrumb", "breadcrumbs")
-        availability = _availability(json_ld_product, document.data_text)
-        raw_pack_size_text = _pack_size_text(name)
+        promotion_text = extracted.promotion_text
+        breadcrumb = extracted.category_breadcrumb
+        availability = extracted.availability
+        raw_pack_size_text = extracted.pack_size_text
         pack_size = parse_pack_size(name)
         normalised_size = normalise_pack_size(name)
         flags = classify_product_flags(name, retailer=self.retailer)
@@ -370,6 +391,35 @@ def _json_ld_price(product: dict[str, Any]) -> str | None:
     if isinstance(offers, dict) and offers.get("price") is not None:
         return str(offers["price"])
     return None
+
+
+def _json_ld_brand(product: dict[str, Any]) -> str | None:
+    brand = product.get("brand")
+    if isinstance(brand, dict):
+        brand = brand.get("name")
+    return str(brand) if brand else None
+
+
+def _currency(product: dict[str, Any], price_text: str | None) -> str | None:
+    offers = product.get("offers")
+    if isinstance(offers, dict) and offers.get("priceCurrency"):
+        return str(offers["priceCurrency"])
+    if price_text and ("£" in price_text or "gbp" in price_text.lower()):
+        return "GBP"
+    return None
+
+
+def _image_url(product: dict[str, Any], meta: dict[str, str]) -> str | None:
+    image = product.get("image")
+    if isinstance(image, list):
+        image = image[0] if image else None
+    return str(image) if image else meta.get("og:image")
+
+
+def _raw_fields(document: _DataTestIdParser) -> dict[str, str]:
+    fields = {key: " ".join(values) for key, values in document.data_text.items()}
+    fields.update({f"meta:{key}": value for key, value in document.meta.items()})
+    return fields
 
 
 def _availability(product: dict[str, Any], data_text: dict[str, list[str]]) -> str:
