@@ -9,7 +9,34 @@ from typing import Any, Protocol
 # appear in reports unless a human has approved them.
 DEFAULT_MIN_AUTO_MATCH_CONFIDENCE = Decimal("0.92")
 
-GROUP_COMPARISON_SQL = """
+# Shared join path from an equivalence group down to its price observations.
+# Reused by every group report so they all walk the same membership graph.
+GROUP_OBSERVATION_JOIN = """
+FROM equivalence_groups
+JOIN product_group_memberships
+    ON product_group_memberships.equivalence_group_id = equivalence_groups.id
+JOIN products
+    ON products.id = product_group_memberships.product_id
+JOIN retailers
+    ON retailers.id = products.retailer_id
+JOIN price_observations
+    ON price_observations.product_id = products.id
+"""
+
+# Membership eligibility predicate shared by all group reports. A membership is
+# eligible only when it was human-approved or auto-matched at/above the
+# confidence floor. Needs-review candidates are never persisted as memberships
+# and rejected products have no membership row, so neither can satisfy this.
+# Binds one parameter: the minimum auto-match confidence.
+MEMBERSHIP_ELIGIBILITY_CLAUSE = """
+  products.is_active
+  AND (
+    product_group_memberships.human_reviewed
+    OR product_group_memberships.match_confidence >= %s
+  )
+"""
+
+GROUP_COMPARISON_SQL = f"""
 SELECT DISTINCT ON (retailers.id)
     retailers.name,
     retailers.slug,
@@ -25,21 +52,9 @@ SELECT DISTINCT ON (retailers.id)
     price_observations.raw_snapshot_id,
     product_group_memberships.match_confidence,
     product_group_memberships.human_reviewed
-FROM equivalence_groups
-JOIN product_group_memberships
-    ON product_group_memberships.equivalence_group_id = equivalence_groups.id
-JOIN products
-    ON products.id = product_group_memberships.product_id
-JOIN retailers
-    ON retailers.id = products.retailer_id
-JOIN price_observations
-    ON price_observations.product_id = products.id
+{GROUP_OBSERVATION_JOIN}
 WHERE equivalence_groups.slug = %s
-  AND products.is_active
-  AND (
-    product_group_memberships.human_reviewed
-    OR product_group_memberships.match_confidence >= %s
-  )
+  AND {MEMBERSHIP_ELIGIBILITY_CLAUSE}
 ORDER BY retailers.id, price_observations.collected_at DESC
 """
 

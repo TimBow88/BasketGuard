@@ -245,10 +245,12 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Continue Phase 3 reporting with a query-based group price history report.
-The group comparison report now returns the latest eligible observation per
-retailer for one group slug, cheapest-first with unit price gap and raw
-snapshot IDs, excluding needs-review and rejected products.
+Continue Phase 3 reporting with a query-based retailer gap report across groups.
+The group comparison report returns the latest eligible observation per retailer
+for one group slug (cheapest-first, with unit price gap and raw snapshot IDs),
+and the group price history report returns eligible observations per retailer
+over a rolling day window. Both exclude needs-review and rejected products and
+share one membership eligibility predicate.
 The group matcher is wired into the ingestion persistence plan: auto-match
 results emit `product_group_memberships` rows with `match_confidence` and
 `match_reason`, while needs-review candidates are surfaced on the plan and in
@@ -272,5 +274,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add a query-based group price history report. Given a DB-API connection, an equivalence group slug and a day window, return ordered price observations per retailer over time for eligible memberships, including unit price, effective price, availability, collected_at and raw snapshot ID. Reuse the comparison report eligibility rules. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add a query-based retailer gap report. Given a DB-API connection and a list of equivalence group slugs, return per group the cheapest retailer, most expensive retailer, absolute and percentage unit price gap, observation date, and missing retailer count, using the latest eligible observation per retailer. Reuse the shared group join and membership eligibility rules. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```

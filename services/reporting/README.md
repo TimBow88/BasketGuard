@@ -9,7 +9,8 @@ Current scope:
 - plain-text weekly report rendering;
 - retailer basket comparison;
 - ranked offender evidence and recommendations;
-- a query-based group comparison report against a DB-API PostgreSQL connection.
+- a query-based group comparison report against a DB-API PostgreSQL connection;
+- a query-based group price history report over a rolling day window.
 
 This service does not send email yet.
 
@@ -31,3 +32,19 @@ price observation per retailer for one equivalence group:
 The query uses PostgreSQL `DISTINCT ON` per retailer ordered by
 `collected_at DESC`. Tests run against a fake DB-API connection; no live
 database is required. There are no HTTP endpoints yet.
+
+## Group Price History Report
+
+`fetch_group_price_history(connection, group_slug, window_days=90)` returns the
+eligible price observations per retailer over a rolling day window. It reuses
+the comparison report's shared join path (`GROUP_OBSERVATION_JOIN`) and
+membership eligibility predicate (`MEMBERSHIP_ELIGIBILITY_CLAUSE`), so the same
+human-approved / auto-match confidence rules apply and needs-review or rejected
+products never appear.
+
+- observations are filtered to the last `window_days` via
+  `collected_at >= now() - make_interval(days => %s)` and ordered oldest-first;
+- results group into `RetailerPriceHistory` series, each with `first`, `latest`
+  and `unit_price_change` helpers and every `PriceHistoryPoint` carrying its raw
+  snapshot ID for audit;
+- `window_days` must be positive; the confidence floor is overridable.
