@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "slug": "own_brand_cornflakes_standard",
+      "name": "Own-brand cornflakes",
+      "status": "active",
+      "risk_level": "low",
+      "unit_basis": "kg",
+      "brand_owner": "retailer_own_label",
+      "tier": "retailer_standard",
+      "required": {
+        "title_contains_any": ["corn flakes", "cornflakes"],
+        "category_contains_any": ["cereal", "breakfast cereal"]
+      },
+      "size_range": { "min": 0.45, "max": 0.75 },
+      "exclude_terms": [
+        "kellogg",
+        "honey",
+        "frosted",
+        "chocolate",
+        "choco",
+        "bran",
+        "rice",
+        "multigrain",
+        "crunchy",
+        "organic",
+        "finest",
+        "extra special",
+        "taste the difference",
+        "the best",
+        "stockwell",
+        "just essentials",
+        "savers"
+      ],
+      "review_triggers": ["category_missing", "unit_price_missing", "tier_unknown", "size_out_of_range"],
+      "auto_match_threshold": 0.92,
+      "review_threshold": 0.75
+    },
+    {
+      "slug": "own_brand_porridge_oats_standard",
+      "name": "Own-brand porridge oats",
+      "status": "active",
+      "risk_level": "low",
+      "unit_basis": "kg",
+      "brand_owner": "retailer_own_label",
+      "tier": "retailer_standard",
+      "required": {
+        "title_contains_any": ["porridge oats", "porridge oat", "rolled oats"],
+        "category_contains_any": ["cereal", "breakfast cereal", "porridge", "oats"]
+      },
+      "size_range": { "min": 0.5, "max": 2.0 },
+      "exclude_terms": [
+        "quaker",
+        "jumbo",
+        "sachet",
+        "instant",
+        "express",
+        "golden syrup",
+        "muesli",
+        "granola",
+        "gluten free",
+        "organic",
+        "protein",
+        "finest",
+        "extra special",
+        "taste the difference",
+        "the best",
+        "stockwell",
+        "just essentials",
+        "savers"
+      ],
+      "review_triggers": ["category_missing", "unit_price_missing", "tier_unknown", "size_out_of_range"],
+      "auto_match_threshold": 0.92,
+      "review_threshold": 0.75
+    }
+  ]
+}

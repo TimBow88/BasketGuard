@@ -84,16 +84,16 @@
 
 ## Grouping
 
-- [ ] Group definitions stored as YAML/JSON fixtures.
-- [ ] Group definition loader validates schema.
-- [ ] Cornflakes group exists.
-- [ ] Porridge oats group exists.
-- [ ] Matcher returns `auto_match`, `needs_review`, `no_match`.
-- [ ] Hard exclusions override score.
+- [x] Group definitions stored as YAML/JSON fixtures.
+- [x] Group definition loader validates schema.
+- [x] Cornflakes group exists.
+- [x] Porridge oats group exists.
+- [x] Matcher returns `auto_match`, `needs_review`, `no_match`.
+- [x] Hard exclusions override score.
 - [ ] Match score is stored in `product_group_memberships.match_confidence`.
 - [ ] Match reason is stored in `product_group_memberships.match_reason`.
-- [ ] Negative fixtures are rejected.
-- [ ] Ambiguous fixtures go to review.
+- [x] Negative fixtures are rejected.
+- [x] Ambiguous fixtures go to review.
 
 ## Review queue
 
