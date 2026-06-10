@@ -124,6 +124,7 @@
 - [x] Query-based group comparison report exists.
 - [x] Query-based group price history report exists.
 - [x] Query-based retailer gap report exists.
+- [x] Query-based review-required products report exists.
 - [ ] Group comparison endpoint exists.
 - [ ] Group history endpoint exists.
 - [ ] Retailer gap endpoint exists.

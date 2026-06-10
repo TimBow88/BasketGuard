@@ -245,20 +245,20 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Complete the required MVP report set with a query-based review-required
-products report over the new `review_queue_items` table.
-The review queue foundation now exists: migration `0003` adds
+Close the review loop with review decision functions so humans can approve or
+reject queued candidates.
+All four required MVP reports now exist as query-based functions: group
+comparison (latest eligible observation per retailer, cheapest-first), group
+price history (eligible observations per retailer over a rolling day window),
+retailer gaps (cheapest vs dearest unit price per group with missing-retailer
+counts) and review-required products (open review queue items oldest-first
+with product, retailer, proposed group and snapshot evidence). The eligible
+reports share one membership eligibility predicate and exclude needs-review
+and rejected products.
+The review queue foundation exists: migration `0003` adds
 `review_queue_items`, and the ingestion persistence plan persists needs-review
 candidates as open review items (linked to product, raw snapshot and proposed
 group) instead of dropping them after the job notes count.
-The query-based reporting layer now covers three of the four required MVP
-reports: group comparison (latest eligible observation per retailer,
-cheapest-first), group price history (eligible observations per retailer over a
-rolling day window), and retailer gaps (cheapest vs dearest unit price per
-group with missing-retailer counts). All three share one membership eligibility
-predicate and exclude needs-review and rejected products. The remaining
-required report, review-required products, needs needs-review candidates to be
-persisted first.
 The group matcher is wired into the ingestion persistence plan: auto-match
 results emit `product_group_memberships` rows with `match_confidence` and
 `match_reason`, while needs-review candidates are surfaced on the plan and in
@@ -282,5 +282,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add a query-based review-required products report. Given a DB-API connection, return open review_queue_items joined to products, retailers, equivalence_groups and raw_product_snapshots, including product title, retailer, proposed group slug, match confidence, match reason, created_at and raw snapshot ID, ordered oldest-first with an optional group slug filter. Add tests with a fake connection. Do not add HTTP endpoints or review decision actions yet.
+Add review decision functions. Given a DB-API connection and a review_queue_items id, approve_review_item should mark the item resolved with decision approve_group_membership and upsert the corresponding product_group_memberships row with human_reviewed=true, while reject_review_item should mark it resolved with decision reject_group_membership and delete or block the membership. Record reviewer notes and resolved_at, commit on success and roll back on failure. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
