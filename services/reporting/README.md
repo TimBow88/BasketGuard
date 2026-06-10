@@ -11,7 +11,8 @@ Current scope:
 - ranked offender evidence and recommendations;
 - a query-based group comparison report against a DB-API PostgreSQL connection;
 - a query-based group price history report over a rolling day window;
-- a query-based retailer gap report across equivalence groups.
+- a query-based retailer gap report across equivalence groups;
+- a query-based review-required products report over open review queue items.
 
 This service does not send email yet.
 
@@ -65,3 +66,19 @@ retailer), so the same eligibility rules apply.
   visible without a separate query;
 - a group with fewer than two retailers has no computable gap (`None`);
 - `RetailerGapReport.widest_gap_first` orders groups by percentage gap.
+
+## Review-Required Products Report
+
+`fetch_review_required_products(connection, group_slug=None)` lists open
+`review_queue_items` oldest-first, joined to the linked product (when present),
+retailer, proposed equivalence group and raw snapshot evidence.
+
+- each `ReviewRequiredItem` carries product title and URL (coalesced from the
+  product row or the raw snapshot), retailer, proposed group slug, match
+  confidence and reason, `created_at` and the raw snapshot ID;
+- snapshot-only items without a product link are tolerated — the retailer
+  resolves through the snapshot and missing fields stay `None`;
+- resolved items are excluded; review decision actions are out of scope here.
+
+This completes the four required MVP reports: group comparison, group history,
+retailer gaps and review-required products.

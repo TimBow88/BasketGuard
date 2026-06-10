@@ -16,6 +16,11 @@ from .group_history import (
     RetailerPriceHistory,
     fetch_group_price_history,
 )
+from .review_required import (
+    ReviewRequiredItem,
+    ReviewRequiredReport,
+    fetch_review_required_products,
+)
 from .weekly_report import generate_weekly_report, render_plain_text_report
 
 __all__ = [
@@ -28,9 +33,12 @@ __all__ = [
     "RetailerGap",
     "RetailerGapReport",
     "RetailerPriceHistory",
+    "ReviewRequiredItem",
+    "ReviewRequiredReport",
     "fetch_group_comparison",
     "fetch_group_price_history",
     "fetch_retailer_gaps",
+    "fetch_review_required_products",
     "generate_weekly_report",
     "render_plain_text_report",
 ]

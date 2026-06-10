@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add a query-based review-required products report. Given a DB-API connection, return open review_queue_items joined to products, retailers, equivalence_groups and raw_product_snapshots, including product title, retailer, proposed group slug, match confidence, match reason, created_at and raw snapshot ID, ordered oldest-first with an optional group slug filter. Add tests with a fake connection. Do not add HTTP endpoints or review decision actions yet.
+Add review decision functions. Given a DB-API connection and a review_queue_items id, approve_review_item should mark the item resolved with decision approve_group_membership and upsert the corresponding product_group_memberships row with human_reviewed=true, while reject_review_item should mark it resolved with decision reject_group_membership and delete or block the membership. Record reviewer notes and resolved_at, commit on success and roll back on failure. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
