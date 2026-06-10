@@ -10,7 +10,8 @@ Current scope:
 - retailer basket comparison;
 - ranked offender evidence and recommendations;
 - a query-based group comparison report against a DB-API PostgreSQL connection;
-- a query-based group price history report over a rolling day window.
+- a query-based group price history report over a rolling day window;
+- a query-based retailer gap report across equivalence groups.
 
 This service does not send email yet.
 
@@ -48,3 +49,19 @@ products never appear.
   and `unit_price_change` helpers and every `PriceHistoryPoint` carrying its raw
   snapshot ID for audit;
 - `window_days` must be positive; the confidence floor is overridable.
+
+## Retailer Gap Report
+
+`fetch_retailer_gaps(connection, group_slugs)` reports, per group, the unit-price
+gap between the cheapest and most expensive retailer. It reuses
+`fetch_group_comparison` for each group (the latest eligible observation per
+retailer), so the same eligibility rules apply.
+
+- each `RetailerGap` carries the cheapest/most-expensive retailer and unit
+  price, absolute and percentage unit-price gap, the unit price basis, the
+  observation date (`as_of`), and the retailer/missing-retailer counts;
+- the "missing retailers" for a group are those seen elsewhere in the same
+  report but absent from that group's comparison, so missing coverage is
+  visible without a separate query;
+- a group with fewer than two retailers has no computable gap (`None`);
+- `RetailerGapReport.widest_gap_first` orders groups by percentage gap.

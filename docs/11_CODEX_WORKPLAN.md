@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add a query-based retailer gap report. Given a DB-API connection and a list of equivalence group slugs, return per group the cheapest retailer, most expensive retailer, absolute and percentage unit price gap, observation date, and missing retailer count, using the latest eligible observation per retailer. Reuse the shared group join and membership eligibility rules. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add the review queue foundation. Add additive migration 0003_parser_review_and_aggregates.sql with a UUID-based review_queue_items table referencing raw_product_snapshots(id), products(id) where available, and equivalence_groups(id) for the proposed group, with match score, match reason and status. Extend the ingestion persistence plan so needs_review candidates produce review_queue_items row payloads (not product_group_memberships), persisted through the repository. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
