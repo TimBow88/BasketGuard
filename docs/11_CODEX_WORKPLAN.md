@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add a query-based group price history report. Given a DB-API connection, an equivalence group slug and a day window, return ordered price observations per retailer over time for eligible memberships, including unit price, effective price, availability, collected_at and raw snapshot ID. Reuse the comparison report eligibility rules. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add a query-based retailer gap report. Given a DB-API connection and a list of equivalence group slugs, return per group the cheapest retailer, most expensive retailer, absolute and percentage unit price gap, observation date, and missing retailer count, using the latest eligible observation per retailer. Reuse the shared group join and membership eligibility rules. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
