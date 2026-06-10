@@ -90,8 +90,8 @@
 - [x] Porridge oats group exists.
 - [x] Matcher returns `auto_match`, `needs_review`, `no_match`.
 - [x] Hard exclusions override score.
-- [ ] Match score is stored in `product_group_memberships.match_confidence`.
-- [ ] Match reason is stored in `product_group_memberships.match_reason`.
+- [x] Match score is stored in `product_group_memberships.match_confidence`.
+- [x] Match reason is stored in `product_group_memberships.match_reason`.
 - [x] Negative fixtures are rejected.
 - [x] Ambiguous fixtures go to review.
 
@@ -114,7 +114,7 @@
 - [x] Price observations are built as append-only row payloads.
 - [x] Observations link to `products`.
 - [x] Observations link to `raw_product_snapshots`.
-- [ ] Observations join to groups through `product_group_memberships`.
+- [x] Observations join to groups through `product_group_memberships`.
 - [ ] Promotion text is stored separately.
 - [ ] Loyalty/member price is not mixed with standard price unless explicitly flagged.
 

@@ -3,8 +3,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Any
+from typing import Any, Sequence
 from uuid import NAMESPACE_URL, uuid5
+
+from basketguard_product_normalisation import EquivalenceGroupDefinition
 
 from .contracts import (
     CollectionAttempt,
@@ -14,6 +16,7 @@ from .contracts import (
     PriceObservation,
     RawProductSnapshot,
 )
+from .group_matching import match_parsed_products
 
 
 @dataclass(frozen=True)
@@ -26,11 +29,15 @@ class IngestionPersistencePlan:
     raw_product_snapshots: list[dict[str, Any]] = field(default_factory=list)
     products: list[dict[str, Any]] = field(default_factory=list)
     price_observations: list[dict[str, Any]] = field(default_factory=list)
+    product_group_memberships: list[dict[str, Any]] = field(default_factory=list)
+    # Surfaced for callers/logging only; never persisted by the repository.
+    group_review_candidates: list[dict[str, Any]] = field(default_factory=list)
 
 
 def build_ingestion_persistence_plan(
     result: IngestionJobResult,
     collection_targets: list[CollectionTarget] | None = None,
+    group_definitions: Sequence[EquivalenceGroupDefinition] | None = None,
 ) -> IngestionPersistencePlan:
     targets = collection_targets or []
     retailer_names = _retailer_names(result, targets)
@@ -94,6 +101,23 @@ def build_ingestion_persistence_plan(
         attempts=result.collection_attempts,
     )
 
+    membership_rows: list[dict[str, Any]] = []
+    review_candidate_rows: list[dict[str, Any]] = []
+    if group_definitions:
+        membership_rows, review_candidate_rows = _group_membership_rows(
+            result=result,
+            group_definitions=group_definitions,
+            equivalence_group_rows=equivalence_group_rows,
+            equivalence_group_ids=equivalence_group_ids,
+            product_ids_by_external_product_id=product_ids_by_external_product_id,
+        )
+        if review_candidate_rows:
+            existing_notes = job_row["notes"] or ""
+            job_row["notes"] = (
+                f"{existing_notes} "
+                f"needs_review_group_candidates={len(review_candidate_rows)}"
+            ).strip()
+
     return IngestionPersistencePlan(
         retailers=retailer_rows,
         equivalence_groups=equivalence_group_rows,
@@ -103,7 +127,82 @@ def build_ingestion_persistence_plan(
         raw_product_snapshots=snapshot_rows,
         products=product_rows,
         price_observations=price_rows,
+        product_group_memberships=membership_rows,
+        group_review_candidates=review_candidate_rows,
     )
+
+
+def _group_membership_rows(
+    result: IngestionJobResult,
+    group_definitions: Sequence[EquivalenceGroupDefinition],
+    equivalence_group_rows: list[dict[str, Any]],
+    equivalence_group_ids: dict[str, str],
+    product_ids_by_external_product_id: dict[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    definitions_by_slug = {definition.slug: definition for definition in group_definitions}
+    summary = match_parsed_products(result.parsed_products, group_definitions)
+
+    best_score_by_product: dict[str, Decimal] = {}
+    for match in summary.auto_matches:
+        key = match.product.external_product_id or ""
+        if key not in best_score_by_product or match.result.score > best_score_by_product[key]:
+            best_score_by_product[key] = match.result.score
+
+    membership_rows = []
+    for match in summary.auto_matches:
+        external_product_id = match.product.external_product_id or ""
+        product_id = product_ids_by_external_product_id.get(external_product_id)
+        if product_id is None:
+            continue
+        group_id = equivalence_group_ids.get(match.group_slug)
+        if group_id is None:
+            group_row = _equivalence_group_row_from_definition(definitions_by_slug[match.group_slug])
+            equivalence_group_rows.append(group_row)
+            equivalence_group_ids[match.group_slug] = group_row["id"]
+            group_id = group_row["id"]
+        membership_rows.append(
+            {
+                "id": _stable_uuid("product_group_membership", product_id, group_id),
+                "product_id": product_id,
+                "equivalence_group_id": group_id,
+                "match_confidence": match.result.score,
+                "match_reason": "; ".join(match.result.reasons),
+                "is_primary_match": match.result.score
+                == best_score_by_product[external_product_id],
+                "human_reviewed": False,
+            },
+        )
+
+    review_candidate_rows = [
+        {
+            "external_product_id": match.product.external_product_id,
+            "canonical_name": match.product.canonical_name,
+            "group_slug": match.group_slug,
+            "match_confidence": match.result.score,
+            "match_reason": "; ".join(match.result.reasons),
+        }
+        for match in summary.review_candidates
+    ]
+    return membership_rows, review_candidate_rows
+
+
+def _equivalence_group_row_from_definition(
+    definition: EquivalenceGroupDefinition,
+) -> dict[str, Any]:
+    return {
+        "id": _stable_uuid("equivalence_group", definition.slug),
+        "canonical_group_name": definition.name,
+        "slug": definition.slug,
+        "category": None,
+        "subcategory": None,
+        "product_type": None,
+        "comparison_level": "definition_v1",
+        "unit_basis": definition.unit_basis,
+        "tier": definition.tier,
+        "confidence_score": Decimal("0.9"),
+        "review_status": "pending",
+        "notes": "Created from equivalence group definition fixture.",
+    }
 
 
 def _retailer_names(

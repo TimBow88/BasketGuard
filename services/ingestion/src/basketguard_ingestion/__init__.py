@@ -17,6 +17,12 @@ from .asda_provider import (
 )
 from .db_mapping import IngestionPersistencePlan, build_ingestion_persistence_plan
 from .db_repository import IngestionPlanRepository, SavePlanResult
+from .group_matching import (
+    GroupMatchingSummary,
+    ProductGroupMatch,
+    candidate_from_parsed_product,
+    match_parsed_products,
+)
 from .fetcher import (
     FetchError,
     FetchHttpStatusError,
@@ -66,6 +72,10 @@ __all__ = [
     "FetchResponse",
     "FetchTimeoutError",
     "FetchUrlError",
+    "GroupMatchingSummary",
+    "ProductGroupMatch",
+    "candidate_from_parsed_product",
+    "match_parsed_products",
     "TESCO_FEATURE_FLAG",
     "ParsedProduct",
     "PostgresConnectionError",

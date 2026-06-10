@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Wire the equivalence group matcher into the ingestion persistence plan. For each parsed product, score it against the loaded group definitions and emit product_group_memberships row payloads with match_confidence and match_reason for auto_match results only; surface needs_review outcomes in the job summary without persisting memberships. Add tests. Do not add review endpoints yet.
+Add a query-based group comparison report. Given a DB-API connection and an equivalence group slug, return the latest price observation per retailer for auto-matched or human-approved memberships, including product title, shelf/effective price, unit price, pack size, availability, collected_at and raw snapshot ID. Exclude needs-review and rejected products. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)

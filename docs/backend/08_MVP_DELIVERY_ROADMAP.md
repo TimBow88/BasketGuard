@@ -245,9 +245,11 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Continue Phase 2 by wiring the group matcher into the ingestion persistence
-plan so accepted candidates produce `product_group_memberships` rows with
-`match_confidence` and `match_reason`.
+Start Phase 3 reporting with a query-based group comparison report.
+The group matcher is wired into the ingestion persistence plan: auto-match
+results emit `product_group_memberships` rows with `match_confidence` and
+`match_reason`, while needs-review candidates are surfaced on the plan and in
+the ingestion job notes without being persisted.
 Equivalence group definitions for own-brand cornflakes and porridge oats now
 exist as validated JSON fixtures, and a deterministic matcher returns
 `auto_match`, `needs_review` or `no_match` with hard exclusions overriding
@@ -267,5 +269,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Wire the equivalence group matcher into the ingestion persistence plan. For each parsed product, score it against the loaded group definitions and emit product_group_memberships row payloads with match_confidence and match_reason for auto_match results only; surface needs_review outcomes in the job summary without persisting memberships. Add tests. Do not add review endpoints yet.
+Add a query-based group comparison report. Given a DB-API connection and an equivalence group slug, return the latest price observation per retailer for auto-matched or human-approved memberships, including product title, shelf/effective price, unit price, pack size, availability, collected_at and raw snapshot ID. Exclude needs-review and rejected products. Add tests with a fake connection. Do not add HTTP endpoints yet.
 ```
