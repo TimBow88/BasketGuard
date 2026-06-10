@@ -37,12 +37,29 @@ The following initial workplan items are complete or superseded by existing repo
 8. First retailer parser tests behind disabled live collection.
 9. Basic dashboard files and UI asset tests.
 
+## Delivered Milestones
+
+Each delivered milestone is a lightweight git tag on `main`. Only tag after the
+full test suite passes.
+
+| Tag | Date | Content |
+|---|---|---|
+| `milestone-001-scaffold` | 2026-06 (initial import) | Docs pack, migrations `0001`/`0002`, normalisation/analytics packages, fixtures, weekly report, web UI scaffold. |
+| `milestone-002-ingestion-pipeline` | 2026-06-10 (PRs #1–#4) | Fetcher abstraction, snapshot store, DB mapping/repository, local persistence command, supplier batch, Asda provider, shared `ExtractedProduct` contract, equivalence group definitions + matcher, membership wiring, group comparison report. |
+| `milestone-003-mvp-reports` | 2026-06-10 (PRs #5–#8) | Group price history report, retailer gap report, migration `0003` review queue foundation, review-required products report. All four required MVP reports exist as query-based functions. |
+
+Planned next milestones (tag when delivered):
+
+1. `milestone-004-review-loop` — review decision functions (approve/reject) closing the human review loop.
+2. `milestone-005-multi-retailer` — Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups.
+3. `milestone-006-api-skeleton` — FastAPI app, `/health`, and HTTP endpoints wrapping the query-based reports.
+
 ## Active Next Prompt
 
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add review decision functions. Given a DB-API connection and a review_queue_items id, approve_review_item should mark the item resolved with decision approve_group_membership and upsert the corresponding product_group_memberships row with human_reviewed=true, while reject_review_item should mark it resolved with decision reject_group_membership and delete or block the membership. Record reviewer notes and resolved_at, commit on success and roll back on failure. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add a fixture-backed Sainsbury's provider and parser. Follow the Tesco/Asda safety model exactly: SainsburysScraperConfig.enabled plus BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)

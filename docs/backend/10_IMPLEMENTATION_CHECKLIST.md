@@ -101,12 +101,12 @@
 - [x] Review candidates persist as `review_queue_items` rows with match score, reason and open status.
 - [ ] Review list endpoint exists.
 - [ ] Review detail endpoint exists.
-- [ ] Approve action exists.
-- [ ] Reject action exists.
+- [x] Approve action exists (`approve_review_item`, no HTTP endpoint yet).
+- [x] Reject action exists (`reject_review_item`, no HTTP endpoint yet).
 - [ ] Parser bug action exists.
 - [ ] New group needed action exists.
-- [ ] Reviewer notes are stored.
-- [ ] Review decisions update `product_group_memberships`.
+- [x] Reviewer notes are stored.
+- [x] Review decisions update `product_group_memberships`.
 - [ ] Review decisions can become fixtures.
 - [x] `0003`: full `review_queue_items` audit table exists.
 
