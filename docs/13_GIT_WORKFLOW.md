@@ -246,13 +246,25 @@ Rules:
 Use lightweight milestones until the product has deployable packages:
 
 ```powershell
-git tag milestone-001-scaffold
-git tag milestone-002-ingestion-contracts
-git tag milestone-003-tesco-parser
+git tag milestone-00X-short-name <commit>
 git push origin --tags
 ```
 
 Only tag after tests pass.
+
+Tags created so far:
+
+```text
+milestone-001-scaffold              Initial prototype import (aac9eff)
+milestone-002-ingestion-pipeline    Ingestion persistence pipeline, Asda provider,
+                                    grouping and membership wiring (PRs #1-#4)
+milestone-003-mvp-reports           Review queue foundation and all four required
+                                    MVP query-based reports (PRs #5-#8)
+```
+
+The milestone log with content details lives in
+[docs/11_CODEX_WORKPLAN.md](11_CODEX_WORKPLAN.md) under "Delivered Milestones",
+alongside the planned next milestones.
 
 ## Recovery Commands
 

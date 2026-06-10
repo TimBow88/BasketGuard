@@ -111,6 +111,25 @@ Review item IDs are keyed on the raw snapshot where possible, so re-running
 the same snapshot upserts the same row while each new collection produces a
 fresh review item against its own evidence.
 
+## Review Decisions
+
+`approve_review_item(connection, review_item_id)` and
+`reject_review_item(connection, review_item_id)` resolve open review queue
+items in a single transaction (commit on success, rollback on failure):
+
+- approve upserts the `product_group_memberships` row with
+  `human_reviewed=true`, using the same deterministic product/group ID as the
+  auto-match path so repeat approvals never duplicate; the product then
+  becomes eligible for group reports;
+- reject deletes any existing membership for the product/group pair and
+  records the rejection on the resolved item. A later collection run can
+  still propose the product again; consulting resolved rejections during
+  matching is a future enhancement;
+- both record the decision, optional reviewer notes and `resolved_at`;
+  already-resolved or missing items raise `ReviewDecisionError`.
+
+There are no HTTP endpoints for review decisions yet.
+
 Matched groups that are not already present from collection target seeds get
 an `equivalence_groups` row created from the definition (slug, name, unit
 basis, tier). Membership row IDs are deterministic per product/group pair, so

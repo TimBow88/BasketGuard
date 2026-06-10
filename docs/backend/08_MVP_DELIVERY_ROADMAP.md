@@ -245,8 +245,12 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Close the review loop with review decision functions so humans can approve or
-reject queued candidates.
+Start Phase 4 multi-retailer coverage with a fixture-backed Sainsbury's
+provider following the Tesco/Asda safety model.
+The review loop is closed: `approve_review_item` and `reject_review_item`
+resolve open queue items transactionally, approval upserts a
+`human_reviewed=true` membership (making the product report-eligible) and
+rejection removes any membership while recording the decision for audit.
 All four required MVP reports now exist as query-based functions: group
 comparison (latest eligible observation per retailer, cheapest-first), group
 price history (eligible observations per retailer over a rolling day window),
@@ -282,5 +286,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add review decision functions. Given a DB-API connection and a review_queue_items id, approve_review_item should mark the item resolved with decision approve_group_membership and upsert the corresponding product_group_memberships row with human_reviewed=true, while reject_review_item should mark it resolved with decision reject_group_membership and delete or block the membership. Record reviewer notes and resolved_at, commit on success and roll back on failure. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add a fixture-backed Sainsbury's provider and parser. Follow the Tesco/Asda safety model exactly: SainsburysScraperConfig.enabled plus BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products.
 ```

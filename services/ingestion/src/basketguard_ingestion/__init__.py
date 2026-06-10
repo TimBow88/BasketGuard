@@ -37,6 +37,12 @@ from .local_persistence import (
     run_allowlisted_product_url_persistence,
 )
 from .pipeline import CollectionPipelineResult, run_tesco_allowlisted_collection
+from .review_decisions import (
+    ReviewDecisionError,
+    ReviewDecisionResult,
+    approve_review_item,
+    reject_review_item,
+)
 from .postgres import DATABASE_URL_ENV, PostgresConnectionError, open_postgres_connection
 from .seed_loader import CollectionTargetSeedError, load_collection_targets
 from .snapshot_store import SnapshotArtifact, SnapshotArtifactWriter
@@ -81,6 +87,10 @@ __all__ = [
     "PostgresConnectionError",
     "PriceObservation",
     "RawProductSnapshot",
+    "ReviewDecisionError",
+    "ReviewDecisionResult",
+    "approve_review_item",
+    "reject_review_item",
     "SnapshotArtifact",
     "SnapshotArtifactWriter",
     "SupplierBatchRunResult",
