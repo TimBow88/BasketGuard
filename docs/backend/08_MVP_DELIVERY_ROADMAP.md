@@ -245,8 +245,13 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Start Phase 2 by adding structured equivalence group definition fixtures and a
-validated loader.
+Continue Phase 2 by wiring the group matcher into the ingestion persistence
+plan so accepted candidates produce `product_group_memberships` rows with
+`match_confidence` and `match_reason`.
+Equivalence group definitions for own-brand cornflakes and porridge oats now
+exist as validated JSON fixtures, and a deterministic matcher returns
+`auto_match`, `needs_review` or `no_match` with hard exclusions overriding
+score.
 The shared `ExtractedProduct` contract is now produced by both the Tesco and
 Asda parsers, with missing extraction fields flagged and an Asda
 missing-price fixture proving the parser-failure path.
@@ -262,5 +267,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add structured equivalence group definition fixtures for own_brand_cornflakes_standard and own_brand_porridge_oats_standard, including required attributes, exclude terms, size ranges, unit basis, risk level and match thresholds. Add a loader with schema validation and tests. Do not add a broad food taxonomy or category crawling.
+Wire the equivalence group matcher into the ingestion persistence plan. For each parsed product, score it against the loaded group definitions and emit product_group_memberships row payloads with match_confidence and match_reason for auto_match results only; surface needs_review outcomes in the job summary without persisting memberships. Add tests. Do not add review endpoints yet.
 ```

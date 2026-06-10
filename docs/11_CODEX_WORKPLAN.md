@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add structured equivalence group definition fixtures for own_brand_cornflakes_standard and own_brand_porridge_oats_standard, including required attributes, exclude terms, size ranges, unit basis, risk level and match thresholds. Add a loader with schema validation and tests. Do not add a broad food taxonomy or category crawling.
+Wire the equivalence group matcher into the ingestion persistence plan. For each parsed product, score it against the loaded group definitions and emit product_group_memberships row payloads with match_confidence and match_reason for auto_match results only; surface needs_review outcomes in the job summary without persisting memberships. Add tests. Do not add review endpoints yet.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
