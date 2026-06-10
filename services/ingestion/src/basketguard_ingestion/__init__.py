@@ -43,6 +43,13 @@ from .review_decisions import (
     approve_review_item,
     reject_review_item,
 )
+from .sainsburys_provider import (
+    SAINSBURYS_FEATURE_FLAG,
+    SainsburysIngestionProvider,
+    SainsburysParseError,
+    SainsburysProductPageParser,
+    SainsburysScraperConfig,
+)
 from .postgres import DATABASE_URL_ENV, PostgresConnectionError, open_postgres_connection
 from .seed_loader import CollectionTargetSeedError, load_collection_targets
 from .snapshot_store import SnapshotArtifact, SnapshotArtifactWriter
@@ -91,6 +98,11 @@ __all__ = [
     "ReviewDecisionResult",
     "approve_review_item",
     "reject_review_item",
+    "SAINSBURYS_FEATURE_FLAG",
+    "SainsburysIngestionProvider",
+    "SainsburysParseError",
+    "SainsburysProductPageParser",
+    "SainsburysScraperConfig",
     "SnapshotArtifact",
     "SnapshotArtifactWriter",
     "SupplierBatchRunResult",

@@ -245,8 +245,12 @@ Move from tracking prices to generating useful insights.
 
 ## Recommended immediate next action
 
-Start Phase 4 multi-retailer coverage with a fixture-backed Sainsbury's
-provider following the Tesco/Asda safety model.
+Continue Phase 4 multi-retailer coverage with a fixture-backed Morrisons
+provider, completing the four MVP retailers.
+Sainsbury's is now the third supported retailer: a fixture-backed
+provider/parser behind `SainsburysScraperConfig.enabled` plus
+`BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1`, producing the shared
+`ExtractedProduct` contract and wired into the supplier batch dispatcher.
 The review loop is closed: `approve_review_item` and `reject_review_item`
 resolve open queue items transactionally, approval upserts a
 `human_reviewed=true` membership (making the product report-eligible) and
@@ -286,5 +290,5 @@ verifies ordered upserts and idempotent single-product re-runs.
 First Codex target:
 
 ```text
-Add a fixture-backed Sainsbury's provider and parser. Follow the Tesco/Asda safety model exactly: SainsburysScraperConfig.enabled plus BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products.
+Add a fixture-backed Morrisons provider and parser. Follow the Tesco/Asda/Sainsbury's safety model exactly: MorrisonsScraperConfig.enabled plus BASKETGUARD_ENABLE_MORRISONS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products. Tag milestone-005-multi-retailer once merged.
 ```

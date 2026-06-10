@@ -227,6 +227,13 @@ AsdaScraperConfig.enabled = true
 BASKETGUARD_ENABLE_ASDA_SCRAPER = 1
 ```
 
+For Sainsbury's, live collection requires both:
+
+```text
+SainsburysScraperConfig.enabled = true
+BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER = 1
+```
+
 Any new retailer must follow the same pattern: a provider config flag plus a
 `BASKETGUARD_ENABLE_<RETAILER>_SCRAPER` environment flag, with fixture-backed
 parser tests before live collection is enabled. Unsupported retailers in seed
@@ -260,6 +267,8 @@ milestone-002-ingestion-pipeline    Ingestion persistence pipeline, Asda provide
                                     grouping and membership wiring (PRs #1-#4)
 milestone-003-mvp-reports           Review queue foundation and all four required
                                     MVP query-based reports (PRs #5-#8)
+milestone-004-review-loop           Review decision functions closing the human
+                                    review loop (PR #9)
 ```
 
 The milestone log with content details lives in

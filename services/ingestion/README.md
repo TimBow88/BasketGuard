@@ -10,6 +10,7 @@ Current scope:
 - fixture-backed mock provider;
 - Tesco HTML parser and disabled-by-default allowlisted provider;
 - Asda HTML parser and disabled-by-default allowlisted provider;
+- Sainsbury's HTML parser and disabled-by-default allowlisted provider;
 - local raw HTML snapshot artifact writing when a snapshot root is configured;
 - database row-payload mapping for the existing UUID/raw SQL schema;
 - DB-API repository writes for mapped ingestion plans;
@@ -246,3 +247,18 @@ The current Asda implementation is fixture-backed and intentionally narrow. It
 parses recorded product HTML for explicit allowlisted Asda product URLs and is
 wired into the supplier batch dispatcher. It does not crawl Asda categories or
 discover products.
+
+## Sainsbury's Provider
+
+`SainsburysIngestionProvider` follows the same safety model:
+
+1. `SainsburysScraperConfig.enabled` is `true`;
+2. `BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1` is set in the environment.
+
+The implementation is fixture-backed and intentionally narrow: recorded
+product HTML, explicit allowlisted URLs only, `extract()` returning the shared
+`ExtractedProduct` contract, and supplier batch dispatcher wiring (seed
+retailer values `Sainsbury's` or `Sainsburys` both dispatch). Sainsbury's
+product URLs usually carry no numeric tail, so the external product ID
+resolves from the JSON-LD `sku`. It does not crawl categories or discover
+products.
