@@ -42,7 +42,7 @@ The following initial workplan items are complete or superseded by existing repo
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add the review queue foundation. Add additive migration 0003_parser_review_and_aggregates.sql with a UUID-based review_queue_items table referencing raw_product_snapshots(id), products(id) where available, and equivalence_groups(id) for the proposed group, with match score, match reason and status. Extend the ingestion persistence plan so needs_review candidates produce review_queue_items row payloads (not product_group_memberships), persisted through the repository. Add tests with a fake connection. Do not add HTTP endpoints yet.
+Add a query-based review-required products report. Given a DB-API connection, return open review_queue_items joined to products, retailers, equivalence_groups and raw_product_snapshots, including product title, retailer, proposed group slug, match confidence, match reason, created_at and raw snapshot ID, ordered oldest-first with an optional group slug filter. Add tests with a fake connection. Do not add HTTP endpoints or review decision actions yet.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)

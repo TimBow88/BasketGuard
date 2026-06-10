@@ -30,6 +30,7 @@ class IngestionPersistencePlan:
     products: list[dict[str, Any]] = field(default_factory=list)
     price_observations: list[dict[str, Any]] = field(default_factory=list)
     product_group_memberships: list[dict[str, Any]] = field(default_factory=list)
+    review_queue_items: list[dict[str, Any]] = field(default_factory=list)
     # Surfaced for callers/logging only; never persisted by the repository.
     group_review_candidates: list[dict[str, Any]] = field(default_factory=list)
 
@@ -102,14 +103,16 @@ def build_ingestion_persistence_plan(
     )
 
     membership_rows: list[dict[str, Any]] = []
+    review_item_rows: list[dict[str, Any]] = []
     review_candidate_rows: list[dict[str, Any]] = []
     if group_definitions:
-        membership_rows, review_candidate_rows = _group_membership_rows(
+        membership_rows, review_item_rows, review_candidate_rows = _group_membership_rows(
             result=result,
             group_definitions=group_definitions,
             equivalence_group_rows=equivalence_group_rows,
             equivalence_group_ids=equivalence_group_ids,
             product_ids_by_external_product_id=product_ids_by_external_product_id,
+            snapshot_ids_by_external_product_id=snapshot_ids_by_external_product_id,
         )
         if review_candidate_rows:
             existing_notes = job_row["notes"] or ""
@@ -128,6 +131,7 @@ def build_ingestion_persistence_plan(
         products=product_rows,
         price_observations=price_rows,
         product_group_memberships=membership_rows,
+        review_queue_items=review_item_rows,
         group_review_candidates=review_candidate_rows,
     )
 
@@ -138,9 +142,19 @@ def _group_membership_rows(
     equivalence_group_rows: list[dict[str, Any]],
     equivalence_group_ids: dict[str, str],
     product_ids_by_external_product_id: dict[str, str],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    snapshot_ids_by_external_product_id: dict[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     definitions_by_slug = {definition.slug: definition for definition in group_definitions}
     summary = match_parsed_products(result.parsed_products, group_definitions)
+
+    def _group_id_for(slug: str) -> str:
+        group_id = equivalence_group_ids.get(slug)
+        if group_id is None:
+            group_row = _equivalence_group_row_from_definition(definitions_by_slug[slug])
+            equivalence_group_rows.append(group_row)
+            equivalence_group_ids[slug] = group_row["id"]
+            group_id = group_row["id"]
+        return group_id
 
     best_score_by_product: dict[str, Decimal] = {}
     for match in summary.auto_matches:
@@ -154,12 +168,7 @@ def _group_membership_rows(
         product_id = product_ids_by_external_product_id.get(external_product_id)
         if product_id is None:
             continue
-        group_id = equivalence_group_ids.get(match.group_slug)
-        if group_id is None:
-            group_row = _equivalence_group_row_from_definition(definitions_by_slug[match.group_slug])
-            equivalence_group_rows.append(group_row)
-            equivalence_group_ids[match.group_slug] = group_row["id"]
-            group_id = group_row["id"]
+        group_id = _group_id_for(match.group_slug)
         membership_rows.append(
             {
                 "id": _stable_uuid("product_group_membership", product_id, group_id),
@@ -173,17 +182,45 @@ def _group_membership_rows(
             },
         )
 
-    review_candidate_rows = [
-        {
-            "external_product_id": match.product.external_product_id,
-            "canonical_name": match.product.canonical_name,
-            "group_slug": match.group_slug,
-            "match_confidence": match.result.score,
-            "match_reason": "; ".join(match.result.reasons),
-        }
-        for match in summary.review_candidates
-    ]
-    return membership_rows, review_candidate_rows
+    review_item_rows = []
+    review_candidate_rows = []
+    for match in summary.review_candidates:
+        external_product_id = match.product.external_product_id or ""
+        product_id = product_ids_by_external_product_id.get(external_product_id)
+        snapshot_id = snapshot_ids_by_external_product_id.get(external_product_id)
+        review_candidate_rows.append(
+            {
+                "external_product_id": match.product.external_product_id,
+                "canonical_name": match.product.canonical_name,
+                "group_slug": match.group_slug,
+                "match_confidence": match.result.score,
+                "match_reason": "; ".join(match.result.reasons),
+            },
+        )
+        if product_id is None and snapshot_id is None:
+            # review_queue_items requires at least one subject reference.
+            continue
+        group_id = _group_id_for(match.group_slug)
+        review_item_rows.append(
+            {
+                # Keyed on the snapshot where possible: re-running the same
+                # snapshot upserts the same row, while each new collection
+                # produces a fresh review item against its own evidence.
+                "id": _stable_uuid(
+                    "review_queue_item",
+                    snapshot_id or product_id or external_product_id,
+                    group_id,
+                ),
+                "raw_snapshot_id": snapshot_id,
+                "product_id": product_id,
+                "equivalence_group_id": group_id,
+                "match_confidence": match.result.score,
+                "match_reason": "; ".join(match.result.reasons),
+                "status": "open",
+            },
+        )
+
+    return membership_rows, review_item_rows, review_candidate_rows
 
 
 def _equivalence_group_row_from_definition(

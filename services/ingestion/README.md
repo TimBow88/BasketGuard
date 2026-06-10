@@ -100,11 +100,16 @@ active definitions:
 - `auto_match` results emit `product_group_memberships` row payloads with
   `match_confidence` and a joined `match_reason`, persisted after `products`
   and `equivalence_groups`;
-- `needs_review` results are surfaced on
+- `needs_review` results persist as `review_queue_items` row payloads (open
+  status, match confidence, match reason, linked to the product, raw snapshot
+  and proposed group) and are also surfaced on
   `IngestionPersistencePlan.group_review_candidates` and counted in the
-  ingestion job notes, but never persisted — a richer review queue belongs to
-  a future `0003` migration;
+  ingestion job notes;
 - `no_match` results are dropped silently.
+
+Review item IDs are keyed on the raw snapshot where possible, so re-running
+the same snapshot upserts the same row while each new collection produces a
+fresh review item against its own evidence.
 
 Matched groups that are not already present from collection target seeds get
 an `equivalence_groups` row created from the definition (slug, name, unit
