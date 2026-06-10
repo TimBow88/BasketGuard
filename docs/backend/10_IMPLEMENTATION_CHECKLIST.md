@@ -120,14 +120,15 @@
 
 ## Reporting
 
+- [x] Query-based group comparison report exists.
 - [ ] Group comparison endpoint exists.
 - [ ] Group history endpoint exists.
 - [ ] Retailer gap endpoint exists.
 - [ ] Daily group aggregation exists.
 - [ ] Daily group aggregation is query-based or backed by future `daily_equivalence_group_prices`.
 - [ ] Confidence labels exist.
-- [ ] Reports exclude rejected/needs-review data.
-- [ ] Reports include source snapshot ID for audit.
+- [x] Reports exclude rejected/needs-review data.
+- [x] Reports include source snapshot ID for audit.
 
 ## Analytics
 
