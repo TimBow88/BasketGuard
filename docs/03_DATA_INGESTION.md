@@ -58,6 +58,13 @@ Potential later-stage route if commercial scale justifies it.
 
 Do not crawl every product initially. Start with a controlled catalogue.
 
+Large supplier catalogues should be built as explicit allowlisted target seeds,
+then processed by the supplier batch workflow. The process records one
+`ingestion_jobs` row per batch, one `ingestion_job_targets` row per attempted
+product, immutable raw snapshots for successful fetches, and skipped/error rows
+for unsupported or failed targets. This supports thousands of staged entries
+without category crawling or product discovery.
+
 ### MVP schedule
 
 | Data type | Frequency |
@@ -103,6 +110,14 @@ Rules:
 5. monitor block/error rates;
 6. do not rely on a single IP/session/account;
 7. respect legal review conclusions before production launch.
+
+Batch workflow defaults should stay conservative:
+
+1. start with `--max-targets`;
+2. process in bounded batches;
+3. keep live provider feature flags disabled unless intentionally collecting;
+4. stage unsupported suppliers instead of attempting generic parsing;
+5. review block/error rates before increasing target volume.
 
 ## Postcode handling
 

@@ -8,6 +8,21 @@ from typing import Literal
 CollectionStatus = Literal["succeeded", "failed", "skipped"]
 Availability = Literal["in_stock", "out_of_stock", "unknown"]
 JobStatus = Literal["succeeded", "failed", "partial"]
+CollectionFrequency = Literal["daily", "twice_weekly", "weekly", "monthly", "manual"]
+
+
+@dataclass(frozen=True)
+class CollectionTarget:
+    retailer: str
+    target_name: str
+    target_url: str | None = None
+    external_product_id: str | None = None
+    group_slug: str | None = None
+    postcode_context: str | None = None
+    collection_frequency: CollectionFrequency = "daily"
+    priority: int = 50
+    is_active: bool = True
+    notes: str | None = None
 
 
 @dataclass(frozen=True)
@@ -24,6 +39,7 @@ class RawProductSnapshot:
     collection_status: CollectionStatus
     parser_version: str
     collected_at: str
+    raw_payload_location: str | None = None
 
 
 @dataclass(frozen=True)
@@ -67,6 +83,18 @@ class PriceObservation:
 
 
 @dataclass(frozen=True)
+class CollectionAttempt:
+    retailer: str
+    target_url: str | None
+    external_product_id: str | None
+    status: CollectionStatus
+    attempted_at: str
+    raw_snapshot_external_product_id: str | None = None
+    error_code: str | None = None
+    error_message: str | None = None
+
+
+@dataclass(frozen=True)
 class IngestionJobResult:
     provider_name: str
     job_type: str
@@ -79,6 +107,7 @@ class IngestionJobResult:
     raw_snapshots: list[RawProductSnapshot] = field(default_factory=list)
     parsed_products: list[ParsedProduct] = field(default_factory=list)
     price_observations: list[PriceObservation] = field(default_factory=list)
+    collection_attempts: list[CollectionAttempt] = field(default_factory=list)
     notes: str | None = None
 
     @property

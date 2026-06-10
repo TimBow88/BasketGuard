@@ -1,6 +1,6 @@
 # BasketGuard Documentation
 
-This folder contains the kickoff documentation pack for BasketGuard. These documents define the initial product scope, technical architecture, data model, and implementation order.
+This folder contains the BasketGuard documentation pack. These documents define the product scope, technical architecture, data model, implementation order, and backend pipeline.
 
 ## Core Documents
 
@@ -18,14 +18,17 @@ This folder contains the kickoff documentation pack for BasketGuard. These docum
 12. [Codex workplan](11_CODEX_WORKPLAN.md)
 13. [Grouping catalogue draft](12_GROUPING_CATALOGUE_DRAFT.md)
 14. [Git workflow](13_GIT_WORKFLOW.md)
+15. [Backend pipeline pack](backend/00_BACKEND_PIPELINE_INDEX.md)
 
-## Build Order
+## Current Build Order
 
-The recommended implementation sequence starts in [Codex workplan](11_CODEX_WORKPLAN.md):
+The original scaffold workplan is retained in [Codex workplan](11_CODEX_WORKPLAN.md) as a completed/legacy checkpoint. The active backend implementation sequence starts in [Backend Codex prompts](backend/09_CODEX_PROMPTS.md).
 
-1. Keep this repo scaffold minimal.
-2. Add database migrations.
-3. Add product normalisation utilities.
-4. Add analytics functions.
-5. Add fixtures and report generation.
-6. Add ingestion contracts before any live crawling.
+Recommended next steps:
+
+1. Build backend models and services against the existing UUID/raw SQL migrations.
+2. Start from allowlisted `collection_targets`, `ingestion_jobs`, immutable `raw_product_snapshots`, `products`, and append-only `price_observations`.
+3. Add richer parser/review/aggregate concepts only through future numbered raw SQL migrations, beginning with `0003`.
+4. Keep live crawling disabled by default and use fixture-backed tests first.
+
+The backend-specific pipeline plan lives in [docs/backend](backend/00_BACKEND_PIPELINE_INDEX.md). It is reconciled to the existing UUID/raw SQL migrations in `db/migrations/`.
