@@ -46,6 +46,21 @@ def _comparison_row(
     )
 
 
+def _open_review_item_row(
+    item_id: str,
+    product_id: str | None = "product-1",
+    status: str = "open",
+) -> tuple[Any, ...]:
+    return (
+        item_id,
+        product_id,
+        "group-1",
+        Decimal("0.74"),
+        "name_similarity_below_auto_match_threshold",
+        status,
+    )
+
+
 def _review_row(item_id: str, group_slug: str) -> tuple[Any, ...]:
     return (
         item_id,
@@ -73,6 +88,9 @@ class FakeCursor:
     def fetchall(self) -> list[tuple[Any, ...]]:
         return self.rows
 
+    def fetchone(self) -> tuple[Any, ...] | None:
+        return self.rows[0] if self.rows else None
+
     def close(self) -> None:
         self.closed = True
 
@@ -81,9 +99,17 @@ class FakeConnection:
     def __init__(self, rows: list[tuple[Any, ...]]) -> None:
         self.cursor_instance = FakeCursor(rows)
         self.closed = False
+        self.commits = 0
+        self.rolled_back = False
 
     def cursor(self) -> FakeCursor:
         return self.cursor_instance
+
+    def commit(self) -> None:
+        self.commits += 1
+
+    def rollback(self) -> None:
+        self.rolled_back = True
 
     def close(self) -> None:
         self.closed = True
@@ -204,6 +230,62 @@ class ApiTests(unittest.TestCase):
             opened[0].cursor_instance.executions[0][1],
             ("own_brand_wheat_biscuits_standard",),
         )
+
+    def test_approve_endpoint_resolves_item_and_upserts_membership(self) -> None:
+        client, opened = self._client([_open_review_item_row("review-1")])
+
+        response = client.post(
+            "/review-items/review-1/approve",
+            json={"reviewer_notes": "same product, pack size matches"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["review_item_id"], "review-1")
+        self.assertEqual(payload["decision"], "approve_group_membership")
+        self.assertIsNotNone(payload["membership_id"])
+        connection = opened[0]
+        self.assertEqual(connection.commits, 1)
+        self.assertTrue(connection.closed)
+        # select, membership upsert, resolve — with the notes bound on resolve.
+        executions = connection.cursor_instance.executions
+        self.assertEqual(len(executions), 3)
+        self.assertEqual(executions[2][1][1], "same product, pack size matches")
+
+    def test_reject_endpoint_resolves_item_and_removes_membership(self) -> None:
+        client, opened = self._client([_open_review_item_row("review-2")])
+
+        response = client.post("/review-items/review-2/reject")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["decision"], "reject_group_membership")
+        self.assertIsNone(payload["membership_id"])
+        connection = opened[0]
+        self.assertEqual(connection.commits, 1)
+        # select, membership delete, resolve.
+        self.assertEqual(len(connection.cursor_instance.executions), 3)
+        self.assertIn("DELETE", connection.cursor_instance.executions[1][0])
+
+    def test_approve_endpoint_returns_404_for_missing_item(self) -> None:
+        client, opened = self._client([])
+
+        response = client.post("/review-items/missing/approve")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("not found", response.json()["detail"].lower())
+        self.assertTrue(opened[0].rolled_back)
+        self.assertTrue(opened[0].closed)
+
+    def test_reject_endpoint_returns_404_for_already_resolved_item(self) -> None:
+        client, _ = self._client(
+            [_open_review_item_row("review-3", status="resolved")],
+        )
+
+        response = client.post("/review-items/review-3/reject")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("already resolved", response.json()["detail"].lower())
 
 
 if __name__ == "__main__":

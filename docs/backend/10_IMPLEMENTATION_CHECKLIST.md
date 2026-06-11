@@ -104,8 +104,8 @@
 - [x] Review candidates persist as `review_queue_items` rows with match score, reason and open status.
 - [x] Review list endpoint exists (`GET /reports/review-required`).
 - [ ] Review detail endpoint exists.
-- [x] Approve action exists (`approve_review_item`, no HTTP endpoint yet).
-- [x] Reject action exists (`reject_review_item`, no HTTP endpoint yet).
+- [x] Approve action exists (`approve_review_item` + `POST /review-items/{id}/approve`).
+- [x] Reject action exists (`reject_review_item` + `POST /review-items/{id}/reject`).
 - [ ] Parser bug action exists.
 - [ ] New group needed action exists.
 - [x] Reviewer notes are stored.
