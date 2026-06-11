@@ -13,15 +13,17 @@ from .db_repository import Connection, IngestionPlanRepository
 from .local_persistence import DEFAULT_ALLOWLIST_SEED, DEFAULT_SNAPSHOT_ROOT
 from .pipeline import CollectionPipelineResult, ProviderFactory
 from .postgres import DATABASE_URL_ENV, PostgresConnectionError, open_postgres_connection
+from .morrisons_provider import MorrisonsIngestionProvider, MorrisonsScraperConfig
 from .sainsburys_provider import SainsburysIngestionProvider, SainsburysScraperConfig
 from .seed_loader import load_collection_targets
 from .tesco_provider import TESCO_FEATURE_FLAG, TescoIngestionProvider, TescoScraperConfig
 from .db_mapping import build_ingestion_persistence_plan
 
 
-SUPPORTED_RETAILERS = {"asda", "tesco", "sainsbury's", "sainsburys"}
+SUPPORTED_RETAILERS = {"asda", "tesco", "sainsbury's", "sainsburys", "morrisons"}
 DEFAULT_BATCH_SIZE = 100
 AsdaProviderFactory = Callable[[AsdaScraperConfig], AsdaIngestionProvider]
+MorrisonsProviderFactory = Callable[[MorrisonsScraperConfig], MorrisonsIngestionProvider]
 SainsburysProviderFactory = Callable[[SainsburysScraperConfig], SainsburysIngestionProvider]
 
 
@@ -70,6 +72,7 @@ def run_supplier_batch_persistence(
     max_targets: int | None = None,
     provider_factory: ProviderFactory = TescoIngestionProvider,
     asda_provider_factory: AsdaProviderFactory = AsdaIngestionProvider,
+    morrisons_provider_factory: MorrisonsProviderFactory = MorrisonsIngestionProvider,
     sainsburys_provider_factory: SainsburysProviderFactory = SainsburysIngestionProvider,
 ) -> SupplierBatchRunResult:
     if batch_size < 1:
@@ -104,6 +107,14 @@ def run_supplier_batch_persistence(
                     connection=connection,
                     provider_factory=sainsburys_provider_factory,
                 )
+            elif retailer == "morrisons":
+                result = _run_morrisons_batch(
+                    batch_targets,
+                    snapshot_root=snapshot_root,
+                    enabled=enabled,
+                    connection=connection,
+                    provider_factory=morrisons_provider_factory,
+                )
             else:
                 result = _run_unsupported_retailer_batch(
                     retailer,
@@ -120,6 +131,7 @@ def main(
     *,
     provider_factory: ProviderFactory = TescoIngestionProvider,
     asda_provider_factory: AsdaProviderFactory = AsdaIngestionProvider,
+    morrisons_provider_factory: MorrisonsProviderFactory = MorrisonsIngestionProvider,
     sainsburys_provider_factory: SainsburysProviderFactory = SainsburysIngestionProvider,
 ) -> int:
     parser = _build_parser()
@@ -143,6 +155,7 @@ def main(
             max_targets=args.max_targets,
             provider_factory=provider_factory,
             asda_provider_factory=asda_provider_factory,
+            morrisons_provider_factory=morrisons_provider_factory,
             sainsburys_provider_factory=sainsburys_provider_factory,
         )
     except Exception as error:
@@ -308,6 +321,34 @@ def _run_sainsburys_batch(
     provider_factory: SainsburysProviderFactory,
 ) -> CollectionPipelineResult:
     config = SainsburysScraperConfig(
+        allowlisted_urls=tuple(target.target_url or "" for target in targets),
+        enabled=enabled,
+        postcode_context=_shared_postcode_context(targets),
+        snapshot_root=Path(snapshot_root),
+    )
+    ingestion_result = provider_factory(config).collect()
+    persistence_plan = build_ingestion_persistence_plan(
+        ingestion_result,
+        collection_targets=targets,
+    )
+    save_result = IngestionPlanRepository(connection).save_plan(persistence_plan)
+    return CollectionPipelineResult(
+        targets=targets,
+        ingestion_result=ingestion_result,
+        persistence_plan=persistence_plan,
+        save_result=save_result,
+    )
+
+
+def _run_morrisons_batch(
+    targets: list[CollectionTarget],
+    *,
+    snapshot_root: str | Path,
+    enabled: bool,
+    connection: Connection,
+    provider_factory: MorrisonsProviderFactory,
+) -> CollectionPipelineResult:
+    config = MorrisonsScraperConfig(
         allowlisted_urls=tuple(target.target_url or "" for target in targets),
         enabled=enabled,
         postcode_context=_shared_postcode_context(targets),

@@ -38,6 +38,7 @@
 - [x] Tesco supplier batch targets are supported.
 - [x] Asda supplier batch targets are supported from recorded fixture HTML.
 - [x] Sainsbury's supplier batch targets are supported from recorded fixture HTML.
+- [x] Morrisons supplier batch targets are supported from recorded fixture HTML.
 - [x] Unsupported supplier targets are staged as skipped attempts.
 - [x] Fetcher abstraction exists.
 - [x] urllib HTTP fetcher exists.
