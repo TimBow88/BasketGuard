@@ -91,6 +91,11 @@
 - [x] Group definition loader validates schema.
 - [x] Cornflakes group exists.
 - [x] Porridge oats group exists.
+- [x] Spaghetti group exists.
+- [x] Plain flour group exists.
+- [x] Granulated sugar group exists.
+- [x] Long grain rice group exists.
+- [x] Baked beans group exists.
 - [x] Matcher returns `auto_match`, `needs_review`, `no_match`.
 - [x] Hard exclusions override score.
 - [x] Match score is stored in `product_group_memberships.match_confidence`.

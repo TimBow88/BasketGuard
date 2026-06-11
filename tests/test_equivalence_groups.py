@@ -43,7 +43,15 @@ class EquivalenceGroupLoaderTests(unittest.TestCase):
 
         self.assertEqual(
             [definition.slug for definition in definitions],
-            ["own_brand_cornflakes_standard", "own_brand_porridge_oats_standard"],
+            [
+                "own_brand_cornflakes_standard",
+                "own_brand_porridge_oats_standard",
+                "own_brand_spaghetti_standard",
+                "own_brand_plain_flour_standard",
+                "own_brand_granulated_sugar_standard",
+                "own_brand_long_grain_rice_standard",
+                "own_brand_baked_beans_standard",
+            ],
         )
         cornflakes = definitions[0]
         self.assertEqual(cornflakes.status, "active")
