@@ -49,17 +49,18 @@ full test suite passes.
 | `milestone-003-mvp-reports` | 2026-06-10 (PRs #5–#8) | Group price history report, retailer gap report, migration `0003` review queue foundation, review-required products report. All four required MVP reports exist as query-based functions. |
 | `milestone-004-review-loop` | 2026-06-10 (PR #9) | Review decision functions: approve resolves the queue item and upserts a `human_reviewed=true` membership; reject resolves and removes the membership. |
 | `milestone-005-multi-retailer` | 2026-06-11 (PRs #10–#11) | Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups. Both follow the Tesco/Asda safety model. |
+| `milestone-006-api-skeleton` | 2026-06-11 (PR #12) | FastAPI app in `services/api/` with `/health` and GET endpoints wrapping the four query-based reports. Injectable connection factory, per-request connections via `open_postgres_connection`, Decimals serialised as strings. No ORM. |
 
 Planned next milestones (tag when delivered):
 
-1. `milestone-006-api-skeleton` — FastAPI app, `/health`, and HTTP endpoints wrapping the query-based reports.
+1. `milestone-007-review-api` — HTTP endpoints for the human review loop: review item detail plus approve/reject actions wrapping the existing decision functions.
 
 ## Active Next Prompt
 
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add a FastAPI app skeleton for BasketGuard. Create services/api/ with a minimal FastAPI app, a /health endpoint, and HTTP GET endpoints that wrap the four existing query-based report functions (group price history, retailer gap report, review-required products, and group comparison). Wire up a PostgreSQL connection using the existing open_postgres_connection helper. Add unittest-based tests for the /health route and at least one report endpoint using a fake connection. Do not introduce SQLAlchemy or any ORM. Tag milestone-006-api-skeleton once merged.
+Add review loop HTTP endpoints to the existing FastAPI app in services/api/. Add POST /review-items/{review_item_id}/approve and POST /review-items/{review_item_id}/reject wrapping the existing approve_review_item and reject_review_item functions, including reviewer notes from the request body. Return 404 with a clear message when the decision functions report a missing or already-resolved item. Reuse the app's injectable connection factory and per-request connection handling. Add unittest-based tests with a fake connection for the success and failure paths. Do not introduce SQLAlchemy or any ORM. Tag milestone-007-review-api once merged.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
