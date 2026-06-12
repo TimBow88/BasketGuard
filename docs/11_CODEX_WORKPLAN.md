@@ -47,19 +47,19 @@ full test suite passes.
 | `milestone-001-scaffold` | 2026-06 (initial import) | Docs pack, migrations `0001`/`0002`, normalisation/analytics packages, fixtures, weekly report, web UI scaffold. |
 | `milestone-002-ingestion-pipeline` | 2026-06-10 (PRs #1–#4) | Fetcher abstraction, snapshot store, DB mapping/repository, local persistence command, supplier batch, Asda provider, shared `ExtractedProduct` contract, equivalence group definitions + matcher, membership wiring, group comparison report. |
 | `milestone-003-mvp-reports` | 2026-06-10 (PRs #5–#8) | Group price history report, retailer gap report, migration `0003` review queue foundation, review-required products report. All four required MVP reports exist as query-based functions. |
+| `milestone-004-review-loop` | 2026-06-10 (PR #9) | Review decision functions: approve resolves the queue item and upserts a `human_reviewed=true` membership; reject resolves and removes the membership. |
 
 Planned next milestones (tag when delivered):
 
-1. `milestone-004-review-loop` — review decision functions (approve/reject) closing the human review loop.
-2. `milestone-005-multi-retailer` — Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups.
-3. `milestone-006-api-skeleton` — FastAPI app, `/health`, and HTTP endpoints wrapping the query-based reports.
+1. `milestone-005-multi-retailer` — Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups.
+2. `milestone-006-api-skeleton` — FastAPI app, `/health`, and HTTP endpoints wrapping the query-based reports.
 
 ## Active Next Prompt
 
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add a fixture-backed Sainsbury's provider and parser. Follow the Tesco/Asda safety model exactly: SainsburysScraperConfig.enabled plus BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products.
+Add a fixture-backed Morrisons provider and parser. Follow the Tesco/Asda/Sainsbury's safety model exactly: MorrisonsScraperConfig.enabled plus BASKETGUARD_ENABLE_MORRISONS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products. Tag milestone-005-multi-retailer once merged.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)

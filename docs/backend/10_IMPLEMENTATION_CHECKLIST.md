@@ -37,6 +37,7 @@
 - [x] Supplier batch workflow processes large allowlisted target files.
 - [x] Tesco supplier batch targets are supported.
 - [x] Asda supplier batch targets are supported from recorded fixture HTML.
+- [x] Sainsbury's supplier batch targets are supported from recorded fixture HTML.
 - [x] Unsupported supplier targets are staged as skipped attempts.
 - [x] Fetcher abstraction exists.
 - [x] urllib HTTP fetcher exists.
@@ -53,6 +54,7 @@
 - [x] Extractor interface exists.
 - [x] First retailer extractor exists.
 - [x] Second retailer extractor exists for Asda fixture HTML.
+- [x] Third retailer extractor exists for Sainsbury's fixture HTML.
 - [x] Extraction tests use recorded fixtures.
 - [x] Missing title is flagged (via `ExtractedProduct.missing_fields` and failed parse attempts).
 - [x] Missing price is flagged (via `ExtractedProduct.missing_fields` and failed parse attempts).
@@ -150,6 +152,7 @@
 - [ ] Tests run on every change.
 - [x] Parser fixtures cover current positive Tesco examples.
 - [x] Parser fixtures cover current positive Asda examples.
+- [x] Parser fixtures cover current positive Sainsbury's examples.
 - [x] Snapshot replay is possible from local raw HTML artifacts.
 - [x] Parser versions are recorded on raw snapshot rows.
 - [ ] Equivalence group definition versions are recorded.

@@ -68,6 +68,7 @@ For larger supplier target files, use the allowlisted batch process:
 python -m basketguard_ingestion.supplier_batch --allowlist-seed services/ingestion/fixtures/mvp_collection_targets.json --batch-size 100 --max-targets 1000 --live
 ```
 
-The batch process does not crawl categories or discover products. Tesco and Asda
-now have narrow fixture-backed provider/parser coverage; unsupported suppliers
-are recorded as skipped attempts until a provider/parser is implemented.
+The batch process does not crawl categories or discover products. Tesco, Asda
+and Sainsbury's now have narrow fixture-backed provider/parser coverage;
+unsupported suppliers are recorded as skipped attempts until a provider/parser
+is implemented.

@@ -18,6 +18,8 @@ sys.path.insert(0, str(ROOT / "services" / "ingestion" / "src"))
 from basketguard_ingestion import (  # noqa: E402
     ASDA_FEATURE_FLAG,
     AsdaIngestionProvider,
+    SAINSBURYS_FEATURE_FLAG,
+    SainsburysIngestionProvider,
     TESCO_FEATURE_FLAG,
     TescoIngestionProvider,
     run_supplier_batch_persistence,
@@ -71,6 +73,11 @@ class FixtureTescoProvider(TescoIngestionProvider):
 class FixtureAsdaProvider(AsdaIngestionProvider):
     def _fetch(self, url: str) -> str:
         return (FIXTURE_DIR / "asda_cornflakes.html").read_text(encoding="utf-8")
+
+
+class FixtureSainsburysProvider(SainsburysIngestionProvider):
+    def _fetch(self, url: str) -> str:
+        return (FIXTURE_DIR / "sainsburys_porridge_oats.html").read_text(encoding="utf-8")
 
 
 class SupplierBatchTests(unittest.TestCase):
@@ -159,6 +166,57 @@ class SupplierBatchTests(unittest.TestCase):
                 os.environ.pop(ASDA_FEATURE_FLAG, None)
             else:
                 os.environ[ASDA_FEATURE_FLAG] = old_value
+
+    def test_batches_allowlisted_sainsburys_targets_with_sainsburys_provider(self) -> None:
+        old_value = os.environ.get(SAINSBURYS_FEATURE_FLAG)
+        os.environ[SAINSBURYS_FEATURE_FLAG] = "1"
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                seed_path = Path(tmpdir) / "supplier_targets.json"
+                seed_path.write_text(
+                    json.dumps(
+                        {
+                            "targets": [
+                                {
+                                    "retailer": "Sainsbury's",
+                                    "target_name": "Sainsbury's own-brand porridge oats 1kg",
+                                    "target_url": "https://www.sainsburys.co.uk/gol-ui/product/sainsburys-scottish-porridge-oats-1kg",
+                                    "external_product_id": "7995502",
+                                    "group_slug": "own_brand_porridge_oats_standard",
+                                    "postcode_context": "MVP default region",
+                                    "is_active": True,
+                                },
+                            ],
+                        },
+                    ),
+                    encoding="utf-8",
+                )
+                connection = FakeConnection()
+
+                result = run_supplier_batch_persistence(
+                    seed_path,
+                    snapshot_root=Path(tmpdir) / "snapshots",
+                    connection=connection,
+                    enabled=True,
+                    retailers={"sainsbury's"},
+                    sainsburys_provider_factory=FixtureSainsburysProvider,
+                )
+
+                self.assertEqual(result.target_count, 1)
+                self.assertEqual(result.collected_count, 1)
+                self.assertEqual(result.failed_or_skipped_count, 0)
+                batch = result.batch_results[0]
+                self.assertEqual(batch.ingestion_result.status, "succeeded")
+                self.assertEqual(batch.ingestion_result.retailer, "Sainsbury's")
+                self.assertEqual(len(batch.persistence_plan.raw_product_snapshots), 1)
+                self.assertEqual(len(batch.persistence_plan.price_observations), 1)
+                self.assertEqual(batch.persistence_plan.ingestion_job_targets[0]["status"], "succeeded")
+                self.assertEqual(connection.commits, 1)
+        finally:
+            if old_value is None:
+                os.environ.pop(SAINSBURYS_FEATURE_FLAG, None)
+            else:
+                os.environ[SAINSBURYS_FEATURE_FLAG] = old_value
 
     def test_stages_unsupported_supplier_targets_as_skipped_attempts(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
