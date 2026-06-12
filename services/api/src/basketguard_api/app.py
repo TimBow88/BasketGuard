@@ -4,9 +4,15 @@ from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from typing import Any, Callable, Iterator
 
-from fastapi import Depends, FastAPI, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from pydantic import BaseModel
 
 from basketguard_ingestion.postgres import open_postgres_connection
+from basketguard_ingestion.review_decisions import (
+    ReviewDecisionError,
+    approve_review_item,
+    reject_review_item,
+)
 from basketguard_reporting import (
     DEFAULT_HISTORY_WINDOW_DAYS,
     fetch_group_comparison,
@@ -17,6 +23,10 @@ from basketguard_reporting import (
 
 
 ConnectionFactory = Callable[[], Any]
+
+
+class ReviewDecisionRequest(BaseModel):
+    reviewer_notes: str | None = None
 
 
 def create_app(connection_factory: ConnectionFactory = open_postgres_connection) -> FastAPI:
@@ -72,7 +82,37 @@ def create_app(connection_factory: ConnectionFactory = open_postgres_connection)
     ) -> dict[str, Any]:
         return _serialise(fetch_review_required_products(connection, group_slug))
 
+    @app.post("/review-items/{review_item_id}/approve")
+    def approve(
+        review_item_id: str,
+        payload: ReviewDecisionRequest | None = None,
+        connection: Any = Depends(_connection),
+    ) -> dict[str, Any]:
+        return _decide(approve_review_item, connection, review_item_id, payload)
+
+    @app.post("/review-items/{review_item_id}/reject")
+    def reject(
+        review_item_id: str,
+        payload: ReviewDecisionRequest | None = None,
+        connection: Any = Depends(_connection),
+    ) -> dict[str, Any]:
+        return _decide(reject_review_item, connection, review_item_id, payload)
+
     return app
+
+
+def _decide(
+    decision: Callable[..., Any],
+    connection: Any,
+    review_item_id: str,
+    payload: ReviewDecisionRequest | None,
+) -> dict[str, Any]:
+    notes = payload.reviewer_notes if payload is not None else None
+    try:
+        return _serialise(decision(connection, review_item_id, reviewer_notes=notes))
+    except ReviewDecisionError as error:
+        # Covers missing items and items that were already resolved.
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 def _serialise(value: Any) -> Any:
