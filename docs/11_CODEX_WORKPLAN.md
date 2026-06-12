@@ -51,17 +51,18 @@ full test suite passes.
 | `milestone-005-multi-retailer` | 2026-06-11 (PRs #10–#11) | Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups. Both follow the Tesco/Asda safety model. |
 | `milestone-006-api-skeleton` | 2026-06-11 (PR #12) | FastAPI app in `services/api/` with `/health` and GET endpoints wrapping the four query-based reports. Injectable connection factory, per-request connections via `open_postgres_connection`, Decimals serialised as strings. No ORM. |
 | `milestone-007-review-api` | 2026-06-11 (PR #13) | Review loop over HTTP: `POST /review-items/{id}/approve` and `/reject` wrapping the existing decision functions, optional reviewer notes body, 404 for missing or already-resolved items. |
+| `milestone-008-mvp-groups` | 2026-06-11 (PR #14) | All seven required MVP equivalence groups exist: spaghetti, plain flour, granulated sugar, long grain rice and baked beans added alongside cornflakes and porridge oats, each with positive fixtures across the four retailers, hard-exclusion negatives and a needs_review ambiguous case. Matcher scoring unchanged. |
 
 Planned next milestones (tag when delivered):
 
-1. `milestone-008-mvp-groups` — the five remaining required equivalence groups (spaghetti, plain flour, granulated sugar, long grain rice, baked beans) with matcher fixtures across the four supported retailers.
+1. `milestone-009-price-movement` — query-based 7/30/90-day unit-price movement per group and retailer, reusing the shared group join and membership eligibility rules.
 
 ## Active Next Prompt
 
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add the five remaining MVP equivalence groups: own_brand_spaghetti_standard, own_brand_plain_flour_standard, own_brand_granulated_sugar_standard, own_brand_long_grain_rice_standard and own_brand_baked_beans_standard. Follow the existing cornflakes/porridge oats group definition format exactly, including include/exclude term lists and unit basis. For each group add matcher tests with positive fixtures across Tesco, Asda, Sainsbury's and Morrisons own-brand names, negative fixtures that must be rejected (premium tiers, value tiers, branded products, wrong product types), and at least one ambiguous fixture that must route to needs_review. Do not change matcher scoring logic. Tag milestone-008-mvp-groups once merged.
+Add a query-based price movement report to basketguard_reporting. For a given group slug, return the unit-price movement per retailer over 7, 30 and 90 day windows: earliest and latest eligible observation in each window, absolute and percentage change, reusing GROUP_OBSERVATION_JOIN and MEMBERSHIP_ELIGIBILITY_CLAUSE so needs-review and rejected products never appear. Expose it as GET /reports/price-movement/{group_slug} on the existing FastAPI app. Add unittest tests with a fake connection covering movement maths, empty windows and serialisation. Do not add materialised aggregates. Tag milestone-009-price-movement once merged.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
