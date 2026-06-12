@@ -48,18 +48,18 @@ full test suite passes.
 | `milestone-002-ingestion-pipeline` | 2026-06-10 (PRs #1–#4) | Fetcher abstraction, snapshot store, DB mapping/repository, local persistence command, supplier batch, Asda provider, shared `ExtractedProduct` contract, equivalence group definitions + matcher, membership wiring, group comparison report. |
 | `milestone-003-mvp-reports` | 2026-06-10 (PRs #5–#8) | Group price history report, retailer gap report, migration `0003` review queue foundation, review-required products report. All four required MVP reports exist as query-based functions. |
 | `milestone-004-review-loop` | 2026-06-10 (PR #9) | Review decision functions: approve resolves the queue item and upserts a `human_reviewed=true` membership; reject resolves and removes the membership. |
+| `milestone-005-multi-retailer` | 2026-06-11 (PRs #10–#11) | Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups. Both follow the Tesco/Asda safety model. |
 
 Planned next milestones (tag when delivered):
 
-1. `milestone-005-multi-retailer` — Sainsbury's and Morrisons fixture-backed providers with comparable own-brand groups.
-2. `milestone-006-api-skeleton` — FastAPI app, `/health`, and HTTP endpoints wrapping the query-based reports.
+1. `milestone-006-api-skeleton` — FastAPI app, `/health`, and HTTP endpoints wrapping the query-based reports.
 
 ## Active Next Prompt
 
 Use the reconciled backend prompt sequence instead of restarting this legacy plan.
 
 ```text
-Add a fixture-backed Morrisons provider and parser. Follow the Tesco/Asda/Sainsbury's safety model exactly: MorrisonsScraperConfig.enabled plus BASKETGUARD_ENABLE_MORRISONS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products. Tag milestone-005-multi-retailer once merged.
+Add a FastAPI app skeleton for BasketGuard. Create services/api/ with a minimal FastAPI app, a /health endpoint, and HTTP GET endpoints that wrap the four existing query-based report functions (group price history, retailer gap report, review-required products, and group comparison). Wire up a PostgreSQL connection using the existing open_postgres_connection helper. Add unittest-based tests for the /health route and at least one report endpoint using a fake connection. Do not introduce SQLAlchemy or any ORM. Tag milestone-006-api-skeleton once merged.
 ```
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)

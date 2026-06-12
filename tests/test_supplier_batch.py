@@ -18,6 +18,8 @@ sys.path.insert(0, str(ROOT / "services" / "ingestion" / "src"))
 from basketguard_ingestion import (  # noqa: E402
     ASDA_FEATURE_FLAG,
     AsdaIngestionProvider,
+    MORRISONS_FEATURE_FLAG,
+    MorrisonsIngestionProvider,
     SAINSBURYS_FEATURE_FLAG,
     SainsburysIngestionProvider,
     TESCO_FEATURE_FLAG,
@@ -73,6 +75,11 @@ class FixtureTescoProvider(TescoIngestionProvider):
 class FixtureAsdaProvider(AsdaIngestionProvider):
     def _fetch(self, url: str) -> str:
         return (FIXTURE_DIR / "asda_cornflakes.html").read_text(encoding="utf-8")
+
+
+class FixtureMorrisonsProvider(MorrisonsIngestionProvider):
+    def _fetch(self, url: str) -> str:
+        return (FIXTURE_DIR / "morrisons_porridge_oats.html").read_text(encoding="utf-8")
 
 
 class FixtureSainsburysProvider(SainsburysIngestionProvider):
@@ -218,6 +225,57 @@ class SupplierBatchTests(unittest.TestCase):
             else:
                 os.environ[SAINSBURYS_FEATURE_FLAG] = old_value
 
+    def test_batches_allowlisted_morrisons_targets_with_morrisons_provider(self) -> None:
+        old_value = os.environ.get(MORRISONS_FEATURE_FLAG)
+        os.environ[MORRISONS_FEATURE_FLAG] = "1"
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                seed_path = Path(tmpdir) / "supplier_targets.json"
+                seed_path.write_text(
+                    json.dumps(
+                        {
+                            "targets": [
+                                {
+                                    "retailer": "Morrisons",
+                                    "target_name": "Morrisons own-brand porridge oats 1kg",
+                                    "target_url": "https://groceries.morrisons.com/products/morrisons-scottish-porridge-oats-268703011",
+                                    "external_product_id": "268703011",
+                                    "group_slug": "own_brand_porridge_oats_standard",
+                                    "postcode_context": "MVP default region",
+                                    "is_active": True,
+                                },
+                            ],
+                        },
+                    ),
+                    encoding="utf-8",
+                )
+                connection = FakeConnection()
+
+                result = run_supplier_batch_persistence(
+                    seed_path,
+                    snapshot_root=Path(tmpdir) / "snapshots",
+                    connection=connection,
+                    enabled=True,
+                    retailers={"morrisons"},
+                    morrisons_provider_factory=FixtureMorrisonsProvider,
+                )
+
+                self.assertEqual(result.target_count, 1)
+                self.assertEqual(result.collected_count, 1)
+                self.assertEqual(result.failed_or_skipped_count, 0)
+                batch = result.batch_results[0]
+                self.assertEqual(batch.ingestion_result.status, "succeeded")
+                self.assertEqual(batch.ingestion_result.retailer, "Morrisons")
+                self.assertEqual(len(batch.persistence_plan.raw_product_snapshots), 1)
+                self.assertEqual(len(batch.persistence_plan.price_observations), 1)
+                self.assertEqual(batch.persistence_plan.ingestion_job_targets[0]["status"], "succeeded")
+                self.assertEqual(connection.commits, 1)
+        finally:
+            if old_value is None:
+                os.environ.pop(MORRISONS_FEATURE_FLAG, None)
+            else:
+                os.environ[MORRISONS_FEATURE_FLAG] = old_value
+
     def test_stages_unsupported_supplier_targets_as_skipped_attempts(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             seed_path = Path(tmpdir) / "supplier_targets.json"
@@ -226,10 +284,10 @@ class SupplierBatchTests(unittest.TestCase):
                     {
                         "targets": [
                             {
-                                "retailer": "Morrisons",
-                                "target_name": "Morrisons own-brand corn flakes 500g",
-                                "target_url": "https://groceries.morrisons.com/products/100038316",
-                                "external_product_id": "100038316",
+                                "retailer": "Ocado",
+                                "target_name": "Ocado own-brand corn flakes 500g",
+                                "target_url": "https://www.ocado.com/products/ocado-corn-flakes-500g-123456",
+                                "external_product_id": "123456",
                                 "group_slug": "own_brand_cornflakes_standard",
                                 "postcode_context": "MVP default region",
                                 "is_active": True,
@@ -245,7 +303,7 @@ class SupplierBatchTests(unittest.TestCase):
                 seed_path,
                 snapshot_root=Path(tmpdir) / "snapshots",
                 connection=connection,
-                retailers={"morrisons"},
+                retailers={"ocado"},
             )
 
             self.assertEqual(result.target_count, 1)

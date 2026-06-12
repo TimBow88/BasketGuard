@@ -43,6 +43,13 @@ from .review_decisions import (
     approve_review_item,
     reject_review_item,
 )
+from .morrisons_provider import (
+    MORRISONS_FEATURE_FLAG,
+    MorrisonsIngestionProvider,
+    MorrisonsParseError,
+    MorrisonsProductPageParser,
+    MorrisonsScraperConfig,
+)
 from .sainsburys_provider import (
     SAINSBURYS_FEATURE_FLAG,
     SainsburysIngestionProvider,
@@ -98,6 +105,11 @@ __all__ = [
     "ReviewDecisionResult",
     "approve_review_item",
     "reject_review_item",
+    "MORRISONS_FEATURE_FLAG",
+    "MorrisonsIngestionProvider",
+    "MorrisonsParseError",
+    "MorrisonsProductPageParser",
+    "MorrisonsScraperConfig",
     "SAINSBURYS_FEATURE_FLAG",
     "SainsburysIngestionProvider",
     "SainsburysParseError",
