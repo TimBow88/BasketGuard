@@ -2,8 +2,8 @@
 
 ## Backend foundation
 
-- [ ] FastAPI app exists.
-- [ ] `/health` endpoint exists.
+- [x] FastAPI app exists (`services/api/`).
+- [x] `/health` endpoint exists.
 - [ ] Settings module exists.
 - [x] PostgreSQL connection helper exists for local persistence command.
 - [ ] Raw SQL migrations run.
@@ -102,7 +102,7 @@
 
 - [x] Review candidate is surfaced for uncertain matches.
 - [x] Review candidates persist as `review_queue_items` rows with match score, reason and open status.
-- [ ] Review list endpoint exists.
+- [x] Review list endpoint exists (`GET /reports/review-required`).
 - [ ] Review detail endpoint exists.
 - [x] Approve action exists (`approve_review_item`, no HTTP endpoint yet).
 - [x] Reject action exists (`reject_review_item`, no HTTP endpoint yet).
@@ -128,9 +128,9 @@
 - [x] Query-based group price history report exists.
 - [x] Query-based retailer gap report exists.
 - [x] Query-based review-required products report exists.
-- [ ] Group comparison endpoint exists.
-- [ ] Group history endpoint exists.
-- [ ] Retailer gap endpoint exists.
+- [x] Group comparison endpoint exists.
+- [x] Group history endpoint exists.
+- [x] Retailer gap endpoint exists.
 - [ ] Daily group aggregation exists.
 - [ ] Daily group aggregation is query-based or backed by future `daily_equivalence_group_prices`.
 - [ ] Confidence labels exist.
