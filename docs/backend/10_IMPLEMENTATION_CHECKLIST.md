@@ -25,8 +25,9 @@
 - [ ] `analytics_findings` table.
 - [ ] `reports` table.
 - [ ] Future migration: `parser_versions` table if richer parser release metadata is needed.
-- [ ] Future migration: `parsed_product_attributes` table for versioned snapshot parser outputs.
+- [x] `0004`: `parsed_product_attributes` table for versioned snapshot parser outputs.
 - [x] `0003`: `review_queue_items` table for richer human-review workflow.
+- [x] `0004`: `review_queue_events` audit trail plus `in_review` state and reviewer/parser/group-version columns on `review_queue_items`.
 - [ ] Future migration: `daily_equivalence_group_prices` table if materialised aggregates are needed.
 
 ## Ingestion
