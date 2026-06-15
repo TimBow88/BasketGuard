@@ -128,8 +128,11 @@ Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMA
 
 These should be tackled after the backend foundation is in place:
 
-1. Rich review queue state through a future `0003` raw SQL migration.
-2. Versioned parsed snapshot attributes through a future `0003` raw SQL migration.
+1. ~~Rich review queue state through a future raw SQL migration.~~ Delivered in
+   migration `0004`: `in_review` state, reviewer/parser/group-version columns on
+   `review_queue_items`, and a `review_queue_events` audit trail.
+2. ~~Versioned parsed snapshot attributes through a future raw SQL migration.~~
+   Delivered in migration `0004` as the `parsed_product_attributes` table.
 3. Materialised daily equivalence group aggregates only if query-based reporting becomes too slow.
 4. Receipt import implementation beyond the current placeholder schema.
 5. Public account/auth flows.
