@@ -18,7 +18,12 @@ from basketguard_product_normalisation import (  # noqa: E402
     classify_product_flags,
     normalise_pack_size,
     normalise_unit_price,
+    parse_brand_owner,
+    parse_exclusion_flags,
     parse_pack_size,
+    parse_product_attributes,
+    parse_product_type,
+    parse_tier,
     parse_unit_price,
 )
 
@@ -157,6 +162,51 @@ class ProductClassificationTests(unittest.TestCase):
         self.assertTrue(flags.is_own_brand)
         self.assertTrue(flags.is_organic)
         self.assertEqual(flags.tier, "organic")
+
+
+class ProductAttributeParsingTests(unittest.TestCase):
+    def test_parses_retailer_own_label_brand_owner(self) -> None:
+        self.assertEqual(
+            parse_brand_owner("Tesco Corn Flakes 500g", retailer="Tesco"),
+            "retailer_own_label",
+        )
+
+    def test_parses_national_brand_owner(self) -> None:
+        self.assertEqual(parse_brand_owner("Kellogg's Corn Flakes 500g"), "national_brand")
+
+    def test_parses_retailer_tiers(self) -> None:
+        self.assertEqual(parse_tier("Asda Just Essentials Baked Beans 410g", "Asda"), "retailer_value")
+        self.assertEqual(parse_tier("Tesco Finest Corn Flakes 500g", "Tesco"), "retailer_premium")
+        self.assertEqual(parse_tier("Sainsbury's Organic Porridge Oats 1kg", "Sainsbury's"), "retailer_organic")
+
+    def test_parses_product_types(self) -> None:
+        self.assertEqual(parse_product_type("Tesco Corn Flakes 500g", "Breakfast Cereal"), "cornflakes")
+        self.assertEqual(parse_product_type("Asda Porridge Oats 1kg", "Cereal"), "porridge_oats")
+        self.assertEqual(parse_product_type("Morrisons Wheat Biscuits 24 Pack"), "wheat_biscuits")
+
+    def test_extracts_cornflakes_and_porridge_exclusion_flags(self) -> None:
+        self.assertEqual(parse_exclusion_flags("Tesco Frosted Flakes 500g"), ("frosted",))
+        self.assertEqual(
+            parse_exclusion_flags("Sainsbury's Instant Porridge Sachets 10 Pack"),
+            ("porridge_sachet",),
+        )
+        self.assertEqual(parse_exclusion_flags("Asda Jumbo Oats 1kg"), ("jumbo_oats",))
+
+    def test_parsed_attributes_collect_group_matching_fields(self) -> None:
+        attributes = parse_product_attributes(
+            "Kellogg's Gluten Free Corn Flakes 500g",
+            retailer="Tesco",
+            category="Breakfast Cereal",
+        )
+
+        self.assertEqual(attributes.raw_title, "Kellogg's Gluten Free Corn Flakes 500g")
+        self.assertEqual(attributes.brand_owner, "national_brand")
+        self.assertEqual(attributes.tier, "specialist_dietary")
+        self.assertEqual(attributes.product_type, "cornflakes")
+        self.assertEqual(
+            attributes.exclusion_flags,
+            ("branded", "free_from", "gluten_free", "specialist_dietary"),
+        )
 
 
 if __name__ == "__main__":

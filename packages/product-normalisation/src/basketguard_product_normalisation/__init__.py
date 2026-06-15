@@ -1,4 +1,13 @@
-from .classification import ProductFlags, classify_product_flags
+from .classification import (
+    ParsedProductAttributes,
+    ProductFlags,
+    classify_product_flags,
+    parse_brand_owner,
+    parse_exclusion_flags,
+    parse_product_attributes,
+    parse_product_type,
+    parse_tier,
+)
 from .grouping import (
     EquivalenceGroupDefinition,
     EquivalenceGroupDefinitionError,
@@ -27,6 +36,7 @@ __all__ = [
     "GroupSizeRange",
     "NormalisedUnitPrice",
     "ParsedPackSize",
+    "ParsedProductAttributes",
     "ParsedUnitPrice",
     "ProductFlags",
     "UnitNormalisationError",
@@ -36,5 +46,10 @@ __all__ = [
     "normalise_pack_size",
     "normalise_unit_price",
     "parse_pack_size",
+    "parse_brand_owner",
+    "parse_exclusion_flags",
+    "parse_product_attributes",
+    "parse_product_type",
+    "parse_tier",
     "parse_unit_price",
 ]
