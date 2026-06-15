@@ -269,11 +269,43 @@ milestone-003-mvp-reports           Review queue foundation and all four require
                                     MVP query-based reports (PRs #5-#8)
 milestone-004-review-loop           Review decision functions closing the human
                                     review loop (PR #9)
+milestone-005-multi-retailer        Sainsbury's and Morrisons fixture-backed
+                                    providers, completing four MVP retailers
+milestone-006-api-skeleton          FastAPI app with health and report endpoints
+milestone-007-review-api            HTTP approve/reject review item endpoints
+milestone-008-mvp-groups            All seven required MVP groups with fixtures
+                                    and matcher cases
 ```
 
 The milestone log with content details lives in
 [docs/11_CODEX_WORKPLAN.md](11_CODEX_WORKPLAN.md) under "Delivered Milestones",
 alongside the planned next milestones.
+
+## Progress Tracking Procedure
+
+Use [docs/11_CODEX_WORKPLAN.md](11_CODEX_WORKPLAN.md) as the authoritative
+progress ledger. Every delivered milestone needs both:
+
+1. a row in the "Delivered Milestones" table;
+2. a matching lightweight git tag.
+
+The supporting checklist in
+[docs/backend/10_IMPLEMENTATION_CHECKLIST.md](backend/10_IMPLEMENTATION_CHECKLIST.md)
+tracks detailed capability status. The roadmap in
+[docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
+tracks direction and the active next prompt.
+
+Before reporting progress, check:
+
+```powershell
+git tag --list "milestone-*"
+python -m unittest discover -s tests -v
+```
+
+If a capability exists in code but has no milestone tag, describe it as
+implemented but not milestone-recorded. If a roadmap prompt says something is
+next but a later milestone tag already exists, treat the roadmap as stale and
+update it in the next documentation pass.
 
 ## Recovery Commands
 
