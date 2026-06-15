@@ -42,6 +42,23 @@ The following initial workplan items are complete or superseded by existing repo
 Each delivered milestone is a lightweight git tag on `main`. Only tag after the
 full test suite passes.
 
+This section is the authoritative project progress ledger. Update it in the
+same PR that delivers a milestone, after tests pass and before creating the
+matching git tag. The tag list in Git should match this table exactly.
+
+Progress tracking uses this order of authority:
+
+1. Git tags named `milestone-00X-short-name`.
+2. This delivered milestone table.
+3. [Backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
+   for capability-level detail.
+4. [MVP delivery roadmap](backend/08_MVP_DELIVERY_ROADMAP.md) for future
+   direction and active prompt text.
+
+When assessing project status, treat git tags and this table as the record of
+what is delivered. Treat roadmap prompts as planned work unless a matching
+milestone tag has been created.
+
 | Tag | Date | Content |
 |---|---|---|
 | `milestone-001-scaffold` | 2026-06 (initial import) | Docs pack, migrations `0001`/`0002`, normalisation/analytics packages, fixtures, weekly report, web UI scaffold. |
@@ -56,6 +73,46 @@ full test suite passes.
 Planned next milestones (tag when delivered):
 
 1. `milestone-009-price-movement` — query-based 7/30/90-day unit-price movement per group and retailer, reusing the shared group join and membership eligibility rules.
+
+## Milestone Closeout Procedure
+
+Use this procedure when a milestone is complete:
+
+1. Run the full suite:
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE='1'; python -m unittest discover -s tests -v
+```
+
+2. Confirm the working tree contains only the intended milestone changes:
+
+```powershell
+git status --short
+```
+
+3. Update this file:
+
+- add one row to "Delivered Milestones";
+- remove or advance the completed item from "Planned next milestones";
+- replace "Active Next Prompt" with the next milestone prompt.
+
+4. Update supporting docs when relevant:
+
+- [Backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
+- [MVP delivery roadmap](backend/08_MVP_DELIVERY_ROADMAP.md)
+- [Git workflow](13_GIT_WORKFLOW.md), if the milestone/tag list changed
+
+5. Commit and merge through the normal PR flow.
+
+6. Create and push the lightweight tag on `main`:
+
+```powershell
+git tag milestone-00X-short-name
+git push origin milestone-00X-short-name
+```
+
+7. Re-check that `git tag --list "milestone-*"` matches the delivered
+milestone table.
 
 ## Active Next Prompt
 

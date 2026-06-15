@@ -20,15 +20,21 @@ This folder contains the BasketGuard documentation pack. These documents define 
 14. [Git workflow](13_GIT_WORKFLOW.md)
 15. [Backend pipeline pack](backend/00_BACKEND_PIPELINE_INDEX.md)
 
-## Current Build Order
+## Progress Tracking
 
-The original scaffold workplan is retained in [Codex workplan](11_CODEX_WORKPLAN.md) as a completed/legacy checkpoint. The active backend implementation sequence starts in [Backend Codex prompts](backend/09_CODEX_PROMPTS.md).
+The original scaffold workplan is retained in [Codex workplan](11_CODEX_WORKPLAN.md)
+as a completed/legacy checkpoint. Current progress is tracked by milestone tags
+and the "Delivered Milestones" table in that file.
 
-Recommended next steps:
+To assess project status:
 
-1. Build backend models and services against the existing UUID/raw SQL migrations.
-2. Start from allowlisted `collection_targets`, `ingestion_jobs`, immutable `raw_product_snapshots`, `products`, and append-only `price_observations`.
-3. Add richer parser/review/aggregate concepts only through future numbered raw SQL migrations, beginning with `0003`.
-4. Keep live crawling disabled by default and use fixture-backed tests first.
+1. Check delivered tags with `git tag --list "milestone-*"`.
+2. Compare them with [Codex workplan](11_CODEX_WORKPLAN.md).
+3. Use [backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
+   for capability-level detail.
+4. Use [backend MVP roadmap](backend/08_MVP_DELIVERY_ROADMAP.md) for the next
+   planned milestone.
+5. Verify with `python -m unittest discover -s tests -v`.
 
-The backend-specific pipeline plan lives in [docs/backend](backend/00_BACKEND_PIPELINE_INDEX.md). It is reconciled to the existing UUID/raw SQL migrations in `db/migrations/`.
+The active next milestone is recorded in [Codex workplan](11_CODEX_WORKPLAN.md)
+under "Active Next Prompt".
