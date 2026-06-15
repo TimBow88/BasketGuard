@@ -41,6 +41,12 @@ UNIT_ALIASES = {
     "sheets": "sheet",
     "nappy": "nappy",
     "nappies": "nappy",
+    "item": "item",
+    "items": "item",
+    "pack": "item",
+    "packs": "item",
+    "biscuit": "item",
+    "biscuits": "item",
 }
 
 UNIT_PATTERN = "|".join(
@@ -60,12 +66,25 @@ PACK_SIZE_PATTERN = re.compile(
 
 PACK_OF_PATTERN = re.compile(r"\bpack\s+of\s+(?P<amount>\d+(?:\.\d+)?)\b", re.IGNORECASE)
 
+UNIT_PRICE_PATTERN = re.compile(
+    rf"""
+    (?P<prefix>£)?\s*
+    (?P<price>\d+(?:\.\d+)?)\s*
+    (?P<suffix>p)?\s*
+    /\s*
+    (?P<amount>\d+(?:\.\d+)?)?\s*
+    (?P<unit>{UNIT_PATTERN})\b
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
 
 @dataclass(frozen=True)
 class ParsedPackSize:
     amount: Decimal
     unit: str
     quantity: Decimal = Decimal("1")
+    raw_text: str = ""
 
     @property
     def total_amount(self) -> Decimal:
@@ -77,6 +96,21 @@ class NormalisedPackSize:
     value: Decimal
     unit_basis: str
     parsed: ParsedPackSize
+
+
+@dataclass(frozen=True)
+class ParsedUnitPrice:
+    price_gbp: Decimal
+    per_amount: Decimal
+    per_unit: str
+    raw_text: str
+
+
+@dataclass(frozen=True)
+class NormalisedUnitPrice:
+    value: Decimal
+    unit_basis: str
+    parsed: ParsedUnitPrice
 
 
 class UnitNormalisationError(ValueError):
@@ -91,11 +125,20 @@ def parse_pack_size(text: str) -> ParsedPackSize:
         quantity = Decimal(match.group("quantity") or "1")
         amount = Decimal(match.group("amount"))
         unit = UNIT_ALIASES[match.group("unit").lower()]
-        return ParsedPackSize(amount=amount, unit=unit, quantity=quantity)
+        return ParsedPackSize(
+            amount=amount,
+            unit=unit,
+            quantity=quantity,
+            raw_text=match.group(0).strip(),
+        )
 
     pack_of_match = PACK_OF_PATTERN.search(text)
     if pack_of_match:
-        return ParsedPackSize(amount=Decimal(pack_of_match.group("amount")), unit="item")
+        return ParsedPackSize(
+            amount=Decimal(pack_of_match.group("amount")),
+            unit="item",
+            raw_text=pack_of_match.group(0).strip(),
+        )
 
     raise UnitNormalisationError(f"Could not parse pack size from: {text!r}")
 
@@ -112,6 +155,43 @@ def normalise_pack_size(
 
     return NormalisedPackSize(
         value=_quantize(value),
+        unit_basis=target_basis,
+        parsed=parsed,
+    )
+
+
+def parse_unit_price(text: str) -> ParsedUnitPrice:
+    """Parse the first recognisable unit price from product text."""
+
+    match = UNIT_PRICE_PATTERN.search(text)
+    if not match:
+        raise UnitNormalisationError(f"Could not parse unit price from: {text!r}")
+
+    price = Decimal(match.group("price"))
+    price_gbp = price / Decimal("100") if match.group("suffix") else price
+    per_amount = Decimal(match.group("amount") or "1")
+    if per_amount <= 0:
+        raise UnitNormalisationError(f"Unit price amount must be greater than zero: {text!r}")
+
+    return ParsedUnitPrice(
+        price_gbp=price_gbp,
+        per_amount=per_amount,
+        per_unit=UNIT_ALIASES[match.group("unit").lower()],
+        raw_text=match.group(0).strip(),
+    )
+
+
+def normalise_unit_price(text: str) -> NormalisedUnitPrice:
+    """Convert a parsed unit price into GBP per comparable unit basis."""
+
+    parsed = parse_unit_price(text)
+    target_basis = _target_basis(parsed.per_unit, None)
+    comparable_amount = _convert(parsed.per_amount, parsed.per_unit, target_basis)
+    if comparable_amount <= 0:
+        raise UnitNormalisationError(f"Unit price amount must be greater than zero: {text!r}")
+
+    return NormalisedUnitPrice(
+        value=_quantize(parsed.price_gbp / comparable_amount),
         unit_basis=target_basis,
         parsed=parsed,
     )
@@ -134,6 +214,8 @@ def _target_basis(unit: str, product_type: str | None) -> str:
         return unit
     if unit == "nappy":
         return "nappy"
+    if unit == "item":
+        return "item"
 
     raise UnitNormalisationError(f"Unsupported unit: {unit!r}")
 
@@ -162,6 +244,8 @@ def _convert(value: Decimal, source_unit: str, target_basis: str) -> Decimal:
     if source_unit == "sheet" and target_basis == "sheet":
         return value
     if source_unit == "nappy" and target_basis == "nappy":
+        return value
+    if source_unit == "item" and target_basis == "item":
         return value
 
     raise UnitNormalisationError(

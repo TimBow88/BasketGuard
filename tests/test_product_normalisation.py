@@ -17,7 +17,9 @@ sys.path.insert(0, str(PACKAGE_SRC))
 from basketguard_product_normalisation import (  # noqa: E402
     classify_product_flags,
     normalise_pack_size,
+    normalise_unit_price,
     parse_pack_size,
+    parse_unit_price,
 )
 
 
@@ -35,12 +37,22 @@ class PackSizeParsingTests(unittest.TestCase):
         self.assertEqual(parsed.amount, Decimal("500"))
         self.assertEqual(parsed.unit, "ml")
         self.assertEqual(parsed.quantity, Decimal("6"))
+        self.assertEqual(parsed.raw_text, "6 x 500ml")
 
     def test_parses_washing_capsules(self) -> None:
         parsed = parse_pack_size("Ariel Washing Capsules 30 Washes")
 
         self.assertEqual(parsed.amount, Decimal("30"))
         self.assertEqual(parsed.unit, "wash")
+
+    def test_parses_count_items_and_biscuits(self) -> None:
+        items = parse_pack_size("Free Range Eggs 12 Items")
+        biscuits = parse_pack_size("Wheat Biscuits 24 Biscuits")
+
+        self.assertEqual(items.amount, Decimal("12"))
+        self.assertEqual(items.unit, "item")
+        self.assertEqual(biscuits.amount, Decimal("24"))
+        self.assertEqual(biscuits.unit, "item")
 
 
 class UnitNormalisationTests(unittest.TestCase):
@@ -79,6 +91,41 @@ class UnitNormalisationTests(unittest.TestCase):
 
         self.assertEqual(normalised.value, Decimal("30"))
         self.assertEqual(normalised.unit_basis, "wash")
+
+    def test_normalises_count_pack_to_items(self) -> None:
+        normalised = normalise_pack_size("Own Brand Wheat Biscuits 24 Pack", "wheat biscuits")
+
+        self.assertEqual(normalised.value, Decimal("24"))
+        self.assertEqual(normalised.unit_basis, "item")
+        self.assertEqual(normalised.parsed.raw_text, "24 Pack")
+
+
+class UnitPriceParsingTests(unittest.TestCase):
+    def test_parses_unit_price_and_preserves_raw_text(self) -> None:
+        parsed = parse_unit_price("Tesco Corn Flakes 10p/100g")
+
+        self.assertEqual(parsed.price_gbp, Decimal("0.1"))
+        self.assertEqual(parsed.per_amount, Decimal("100"))
+        self.assertEqual(parsed.per_unit, "g")
+        self.assertEqual(parsed.raw_text, "10p/100g")
+
+    def test_normalises_pence_per_100g_to_gbp_per_kg(self) -> None:
+        normalised = normalise_unit_price("Tesco Corn Flakes 10p/100g")
+
+        self.assertEqual(normalised.value, Decimal("1"))
+        self.assertEqual(normalised.unit_basis, "kg")
+
+    def test_normalises_pence_per_100ml_to_gbp_per_litre(self) -> None:
+        normalised = normalise_unit_price("Milk 65p/100ml")
+
+        self.assertEqual(normalised.value, Decimal("6.5"))
+        self.assertEqual(normalised.unit_basis, "litre")
+
+    def test_normalises_pounds_per_kg(self) -> None:
+        normalised = normalise_unit_price("Cheddar £5.50/kg")
+
+        self.assertEqual(normalised.value, Decimal("5.5"))
+        self.assertEqual(normalised.unit_basis, "kg")
 
 
 class ProductClassificationTests(unittest.TestCase):
