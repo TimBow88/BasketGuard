@@ -17,6 +17,7 @@ from basketguard_reporting import (
     DEFAULT_HISTORY_WINDOW_DAYS,
     fetch_group_comparison,
     fetch_group_price_history,
+    fetch_group_price_movement,
     fetch_retailer_gaps,
     fetch_review_required_products,
 )
@@ -67,6 +68,13 @@ def create_app(connection_factory: ConnectionFactory = open_postgres_connection)
         connection: Any = Depends(_connection),
     ) -> dict[str, Any]:
         return _serialise(fetch_group_price_history(connection, group_slug, window_days))
+
+    @app.get("/reports/price-movement/{group_slug}")
+    def price_movement(
+        group_slug: str,
+        connection: Any = Depends(_connection),
+    ) -> dict[str, Any]:
+        return _serialise(fetch_group_price_movement(connection, group_slug))
 
     @app.get("/reports/retailer-gaps")
     def retailer_gaps(

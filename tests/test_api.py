@@ -46,6 +46,26 @@ def _comparison_row(
     )
 
 
+def _movement_row(
+    retailer: str,
+    slug: str,
+    title: str,
+    unit_price: str,
+) -> tuple[Any, ...]:
+    return (
+        retailer,
+        slug,
+        title,
+        Decimal(unit_price),
+        "kg",
+        "in_stock",
+        "2026-06-15T08:00:00Z",
+        f"snapshot-{slug}",
+        Decimal("1.00"),
+        False,
+    )
+
+
 def _open_review_item_row(
     item_id: str,
     product_id: str | None = "product-1",
@@ -183,6 +203,29 @@ class ApiTests(unittest.TestCase):
         response = client.get("/reports/group-history/own_brand_porridge_oats_standard?window_days=0")
 
         self.assertEqual(response.status_code, 422)
+
+    def test_price_movement_endpoint_serialises_nested_decimal_values(self) -> None:
+        client, opened = self._client(
+            [_movement_row("Asda", "asda", "ASDA Corn Flakes 500g", "2.70")],
+        )
+
+        response = client.get("/reports/price-movement/own_brand_cornflakes_standard")
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["group_slug"], "own_brand_cornflakes_standard")
+        self.assertEqual(payload["retailers"][0]["retailer_slug"], "asda")
+        self.assertEqual(len(payload["retailers"][0]["windows"]), 3)
+        seven_day = payload["retailers"][0]["windows"][0]
+        self.assertEqual(seven_day["window_days"], 7)
+        self.assertEqual(seven_day["latest"]["unit_price"], "2.70")
+        self.assertEqual(seven_day["absolute_unit_price_change"], "0.00")
+        self.assertEqual(seven_day["percentage_unit_price_change"], "0.0")
+        self.assertEqual(
+            [execution[1][2] for execution in opened[0].cursor_instance.executions],
+            [7, 30, 90],
+        )
+        self.assertTrue(opened[0].closed)
 
     def test_retailer_gaps_endpoint_accepts_repeated_group_slugs(self) -> None:
         client, opened = self._client(
