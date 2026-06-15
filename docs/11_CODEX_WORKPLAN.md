@@ -69,10 +69,17 @@ milestone tag has been created.
 | `milestone-006-api-skeleton` | 2026-06-11 (PR #12) | FastAPI app in `services/api/` with `/health` and GET endpoints wrapping the four query-based reports. Injectable connection factory, per-request connections via `open_postgres_connection`, Decimals serialised as strings. No ORM. |
 | `milestone-007-review-api` | 2026-06-11 (PR #13) | Review loop over HTTP: `POST /review-items/{id}/approve` and `/reject` wrapping the existing decision functions, optional reviewer notes body, 404 for missing or already-resolved items. |
 | `milestone-008-mvp-groups` | 2026-06-11 (PR #14) | All seven required MVP equivalence groups exist: spaghetti, plain flour, granulated sugar, long grain rice and baked beans added alongside cornflakes and porridge oats, each with positive fixtures across the four retailers, hard-exclusion negatives and a needs_review ambiguous case. Matcher scoring unchanged. |
+| `milestone-009-schema-0004` | 2026-06-15 (PR #15, `be5de81`) | Migration `0004`: richer review-queue state (`in_review`, reviewer/parser/group-version columns, `review_queue_events` audit trail) and the `parsed_product_attributes` versioned parser-output table. (BAS-18) |
+| `milestone-010-price-movement` | 2026-06-15 (`45f1cb0`) | Query-based 7/30/90-day unit-price movement per group/retailer and `GET /reports/price-movement/{group_slug}`, reusing the shared group join and membership eligibility. (BAS-13) |
+| `milestone-011-analytics` | 2026-06-15 (`240e46c`) | Group and basket-level price analytics: 7/30/90-day + YoY movement, retailer gap reuse, basket missing-group accounting. (BAS-16) |
+| `milestone-012-normalisation` | 2026-06-15 (`5876cd0`) | Normalisation parsers: weight/volume, count/items/biscuits, multipack raw-text preservation, unit-price (p/100g → GBP/kg). (BAS-14) |
+| `milestone-013-parsing` | 2026-06-15 (`c470800`) | Product attribute parsing: brand owner, tier, product type and exclusion flags feeding the equivalence matcher. (BAS-15) |
+
+> Numbering note: `009`–`013` reflect **merge order on `main`**, not the original plan. Migration `0004` (BAS-18) merged via PR #15 *before* the BAS-13 price-movement commit, so it takes `009` and price-movement becomes `010`. This keeps tag numbers monotonic with history. BAS-14/15/16 were committed directly to `main` (commits above), outside the PR flow.
 
 Planned next milestones (tag when delivered):
 
-1. `milestone-009-price-movement` — query-based 7/30/90-day unit-price movement per group and retailer, reusing the shared group join and membership eligibility rules.
+- None outstanding. The reconciled Linear **BasketGuard MVP** backlog is now authoritative for what's next (e.g. BAS-17 anomaly detection, gated on BAS-25; and the BAS-29 live-collection & operational-hardening epic).
 
 ## Milestone Closeout Procedure
 
@@ -116,11 +123,13 @@ milestone table.
 
 ## Active Next Prompt
 
-Use the reconciled backend prompt sequence instead of restarting this legacy plan.
-
-```text
-Add a query-based price movement report to basketguard_reporting. For a given group slug, return the unit-price movement per retailer over 7, 30 and 90 day windows: earliest and latest eligible observation in each window, absolute and percentage change, reusing GROUP_OBSERVATION_JOIN and MEMBERSHIP_ELIGIBILITY_CLAUSE so needs-review and rejected products never appear. Expose it as GET /reports/price-movement/{group_slug} on the existing FastAPI app. Add unittest tests with a fake connection covering movement maths, empty windows and serialisation. Do not add materialised aggregates. Tag milestone-009-price-movement once merged.
-```
+The legacy price-movement prompt is delivered (now `milestone-010-price-movement`).
+There is no single legacy "next prompt" anymore — next work is tracked in the
+reconciled Linear **BasketGuard MVP** backlog (the shared Code/Codex queue),
+routed by `agent:code` / `agent:codex` labels. Notably outstanding: the
+**BAS-29** live-collection & operational-hardening epic (headless fetcher,
+anti-bot/proxy, scheduling, runtime foundation, observability/CI) and **BAS-17**
+anomaly detection (gated on **BAS-25**).
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
 
