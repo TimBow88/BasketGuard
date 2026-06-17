@@ -40,6 +40,13 @@ from .headless_fetcher import (
     RenderRequest,
     RenderResult,
 )
+from .resilience import (
+    DEFAULT_RETRYABLE_STATUSES,
+    PolitenessPolicy,
+    RetryingFetcher,
+    detect_block_signal,
+)
+from .proxy import ProxyEndpoint, ProxyPool, ProxyPoolError
 from .mock_provider import FixtureIngestionProvider
 from .local_persistence import (
     AllowlistedProductUrlError,
@@ -108,6 +115,13 @@ __all__ = [
     "PlaywrightSupplierFetcher",
     "RenderRequest",
     "RenderResult",
+    "DEFAULT_RETRYABLE_STATUSES",
+    "PolitenessPolicy",
+    "RetryingFetcher",
+    "detect_block_signal",
+    "ProxyEndpoint",
+    "ProxyPool",
+    "ProxyPoolError",
     "GroupMatchingSummary",
     "ProductGroupMatch",
     "candidate_from_parsed_product",
