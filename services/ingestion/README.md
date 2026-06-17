@@ -124,6 +124,39 @@ If Playwright is not installed, the default renderer raises an actionable
 fetcher and renderer entirely with fakes, so CI needs neither Playwright nor a
 browser.
 
+### Politeness, retries and proxy pool
+
+`RetryingFetcher` (`resilience.py`) wraps any `SupplierFetcher` with a per-host
+`PolitenessPolicy` (minimum interval + jitter) and bounded exponential-backoff
+retries on transient failures only — timeouts, `429`/`5xx`, URL/render errors —
+never a `404` or hard `403` challenge. `detect_block_signal` labels a response
+that looks like a WAF/anti-bot interstitial. `ProxyPool` (`proxy.py`) rotates
+over healthy UK-egress `ProxyEndpoint`s with consecutive-failure quarantine and
+cooldown restoration, and `ProxyEndpoint.as_config()` yields the headless
+fetcher's `proxy=` mapping. The strategy and its deferred (vendor/legal-gated)
+parts are in `docs/backend/11_ANTIBOT_AND_POLITENESS.md`. Clock, sleep and
+randomness are injected, so all of it is deterministic under test.
+
+### Drift detection
+
+`drift.py` distinguishes a parser break from a single genuinely-missing value by
+working at the batch altitude. `analyse_extracted_batch` runs structural
+canaries over a batch of `ExtractedProduct` (replaying fixtures); `analyse_job`
+runs operational checks over a real `IngestionJobResult` (failed job, low
+success rate, missing snapshot fields, non-positive prices). Both return a
+`DriftReport` with `has_breakage` / `highest_severity`; `alert_on_drift` +
+`format_drift_alert` are a thin injectable alerting seam.
+
+### Scheduling and orchestration
+
+`scheduling.py` decides which active allowlisted targets are due now from each
+target's `collection_frequency` and last-collected time (`due_targets`, time
+injected). `CollectionOrchestrator` (`orchestration.py`) runs each `ProviderRun`,
+evaluates the result for drift, routes breakages to an optional alert sink and
+returns a consolidated `OrchestrationRunResult`. A provider raising is captured
+as a critical outcome rather than aborting the run, so a daily run stays
+observable end to end.
+
 ## Database Mapping
 
 `build_ingestion_persistence_plan` converts an `IngestionJobResult` plus optional `CollectionTarget` records into row payloads for:
