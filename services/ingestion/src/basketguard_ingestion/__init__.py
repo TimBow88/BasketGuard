@@ -26,10 +26,56 @@ from .group_matching import (
 from .fetcher import (
     FetchError,
     FetchHttpStatusError,
+    FetchRenderError,
     FetchResponse,
     FetchTimeoutError,
     FetchUrlError,
+    SupplierFetcher,
     UrllibSupplierFetcher,
+)
+from .headless_fetcher import (
+    PageRenderer,
+    PlaywrightPageRenderer,
+    PlaywrightSupplierFetcher,
+    RenderRequest,
+    RenderResult,
+)
+from .resilience import (
+    DEFAULT_RETRYABLE_STATUSES,
+    PolitenessPolicy,
+    RetryingFetcher,
+    detect_block_signal,
+)
+from .proxy import ProxyEndpoint, ProxyPool, ProxyPoolError
+from .live_fetcher import DEFAULT_LIVE_HEADERS, build_live_fetcher
+from .feasibility_spike import (
+    FeasibilitySpike,
+    MAX_SPIKE_TARGETS,
+    SpikeAttempt,
+    SpikeReport,
+    SpikeTarget,
+)
+from .drift import (
+    DriftAlertSink,
+    DriftExpectations,
+    DriftFinding,
+    DriftReport,
+    alert_on_drift,
+    analyse_extracted_batch,
+    analyse_job,
+    format_drift_alert,
+)
+from .scheduling import (
+    FREQUENCY_INTERVALS,
+    due_targets,
+    is_due,
+    target_key,
+)
+from .orchestration import (
+    CollectionOrchestrator,
+    OrchestrationOutcome,
+    OrchestrationRunResult,
+    ProviderRun,
 )
 from .mock_provider import FixtureIngestionProvider
 from .local_persistence import (
@@ -89,9 +135,46 @@ __all__ = [
     "ProductExtractor",
     "FetchError",
     "FetchHttpStatusError",
+    "FetchRenderError",
     "FetchResponse",
     "FetchTimeoutError",
     "FetchUrlError",
+    "SupplierFetcher",
+    "PageRenderer",
+    "PlaywrightPageRenderer",
+    "PlaywrightSupplierFetcher",
+    "RenderRequest",
+    "RenderResult",
+    "DEFAULT_RETRYABLE_STATUSES",
+    "PolitenessPolicy",
+    "RetryingFetcher",
+    "detect_block_signal",
+    "ProxyEndpoint",
+    "ProxyPool",
+    "ProxyPoolError",
+    "DEFAULT_LIVE_HEADERS",
+    "build_live_fetcher",
+    "FeasibilitySpike",
+    "MAX_SPIKE_TARGETS",
+    "SpikeAttempt",
+    "SpikeReport",
+    "SpikeTarget",
+    "DriftAlertSink",
+    "DriftExpectations",
+    "DriftFinding",
+    "DriftReport",
+    "alert_on_drift",
+    "analyse_extracted_batch",
+    "analyse_job",
+    "format_drift_alert",
+    "FREQUENCY_INTERVALS",
+    "due_targets",
+    "is_due",
+    "target_key",
+    "CollectionOrchestrator",
+    "OrchestrationOutcome",
+    "OrchestrationRunResult",
+    "ProviderRun",
     "GroupMatchingSummary",
     "ProductGroupMatch",
     "candidate_from_parsed_product",

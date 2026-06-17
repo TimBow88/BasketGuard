@@ -1,0 +1,17 @@
+# BasketGuard backend dependency manifest.
+#
+# The test suite itself runs on the Python standard library (unittest) with no
+# third-party packages. These dependencies are for running the services and
+# live collection locally / in deployment. Pin ranges conservatively.
+
+# API
+fastapi>=0.110
+uvicorn[standard]>=0.29
+httpx>=0.27            # fastapi.testclient transport; also a future fetcher option
+pydantic>=2.6
+
+# Database
+psycopg[binary]>=3.1  # DB-API connection for the repository + migration runner
+
+# Live collection (optional at runtime; imported lazily)
+playwright>=1.43      # headless-browser fetcher (PlaywrightSupplierFetcher)

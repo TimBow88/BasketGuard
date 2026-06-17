@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from typing import Any, Callable, Iterator
@@ -7,6 +8,7 @@ from typing import Any, Callable, Iterator
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from .hardening import install_hardening, validate_group_slug, validate_group_slugs
 from basketguard_ingestion.postgres import open_postgres_connection
 from basketguard_ingestion.review_decisions import (
     ReviewDecisionError,
@@ -30,16 +32,32 @@ class ReviewDecisionRequest(BaseModel):
     reviewer_notes: str | None = None
 
 
-def create_app(connection_factory: ConnectionFactory = open_postgres_connection) -> FastAPI:
+def create_app(
+    connection_factory: ConnectionFactory = open_postgres_connection,
+    *,
+    rate_limit: int = 120,
+    rate_window_seconds: int = 60,
+    clock: Callable[[], float] = time.monotonic,
+) -> FastAPI:
     """Build the API app with an injectable DB-API connection factory.
 
     The factory is called once per report request and the connection is closed
     afterwards. Tests inject a factory returning a fake connection; production
     uses the shared ``open_postgres_connection`` helper.
+
+    Edge hardening (per-client rate limiting, security headers) is installed
+    here. ``rate_limit`` / ``rate_window_seconds`` / ``clock`` are configurable
+    for deployment and for tests that exercise the 429 path.
     """
 
     app = FastAPI(title="BasketGuard API", version="0.1.0")
     app.state.connection_factory = connection_factory
+    install_hardening(
+        app,
+        rate_limit=rate_limit,
+        rate_window_seconds=rate_window_seconds,
+        clock=clock,
+    )
 
     def _connection(request: Request) -> Iterator[Any]:
         connection = request.app.state.connection_factory()
@@ -59,14 +77,16 @@ def create_app(connection_factory: ConnectionFactory = open_postgres_connection)
         group_slug: str,
         connection: Any = Depends(_connection),
     ) -> dict[str, Any]:
+        validate_group_slug(group_slug)
         return _serialise(fetch_group_comparison(connection, group_slug))
 
     @app.get("/reports/group-history/{group_slug}")
     def group_history(
         group_slug: str,
-        window_days: int = Query(default=DEFAULT_HISTORY_WINDOW_DAYS, ge=1),
+        window_days: int = Query(default=DEFAULT_HISTORY_WINDOW_DAYS, ge=1, le=3650),
         connection: Any = Depends(_connection),
     ) -> dict[str, Any]:
+        validate_group_slug(group_slug)
         return _serialise(fetch_group_price_history(connection, group_slug, window_days))
 
     @app.get("/reports/price-movement/{group_slug}")
@@ -74,6 +94,7 @@ def create_app(connection_factory: ConnectionFactory = open_postgres_connection)
         group_slug: str,
         connection: Any = Depends(_connection),
     ) -> dict[str, Any]:
+        validate_group_slug(group_slug)
         return _serialise(fetch_group_price_movement(connection, group_slug))
 
     @app.get("/reports/retailer-gaps")
@@ -81,6 +102,7 @@ def create_app(connection_factory: ConnectionFactory = open_postgres_connection)
         group_slug: list[str] = Query(min_length=1),
         connection: Any = Depends(_connection),
     ) -> dict[str, Any]:
+        validate_group_slugs(group_slug)
         return _serialise(fetch_retailer_gaps(connection, group_slug))
 
     @app.get("/reports/review-required")
@@ -88,6 +110,8 @@ def create_app(connection_factory: ConnectionFactory = open_postgres_connection)
         group_slug: str | None = Query(default=None),
         connection: Any = Depends(_connection),
     ) -> dict[str, Any]:
+        if group_slug is not None:
+            validate_group_slug(group_slug)
         return _serialise(fetch_review_required_products(connection, group_slug))
 
     @app.post("/review-items/{review_item_id}/approve")

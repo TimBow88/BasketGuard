@@ -72,6 +72,91 @@ attempt errors such as `timeout`, `http_404`, `http_429` and `url_error` into
 `ingestion_job_targets` via the existing mapping layer. Live fetching remains
 disabled unless both the provider config and the retailer feature flag allow it.
 
+### Headless-browser fetcher
+
+Real Tesco/Asda/Sainsbury's/Morrisons product pages are JavaScript single-page
+apps behind WAF/anti-bot stacks: a plain `urllib` GET returns an empty shell or
+a challenge page. `PlaywrightSupplierFetcher` is a second `SupplierFetcher`
+implementation that drives a headless browser and returns the fully-rendered
+HTML. Because it satisfies the same `SupplierFetcher` interface, a provider opts
+into rendered fetches by passing it as the config `fetcher` — no parser change:
+
+```python
+from basketguard_ingestion import PlaywrightSupplierFetcher, TescoScraperConfig
+
+config = TescoScraperConfig(
+    allowlisted_urls=(...),
+    enabled=True,
+    fetcher=PlaywrightSupplierFetcher(wait_for_selector="[data-testid='price']"),
+)
+```
+
+Design points:
+
+- the actual browser work sits behind an injectable `PageRenderer` seam
+  (`RenderRequest` in, `RenderResult` out), so the fetcher and its error mapping
+  are unit-tested against fakes with no live network and no browser installed —
+  mirroring the injectable `opener` on `UrllibSupplierFetcher`;
+- the default `PlaywrightPageRenderer` imports Playwright **lazily** on first
+  render, so the package and test suite import fine without it;
+- `wait_until` (default `networkidle`) and an optional `wait_for_selector` make
+  the render wait for the price to hydrate; both timeouts derive from the
+  config `timeout_seconds`;
+- `proxy` and `extra_headers` hooks are accepted but default to off, ready for
+  the proxy-pool and anti-bot children of the live-collection epic to wire in
+  without changing this contract;
+- failures map onto the shared taxonomy: navigation/selector timeouts become
+  `FetchTimeoutError`, a rendered error status (e.g. a `403` challenge page)
+  becomes `FetchHttpStatusError` with the challenge body preserved, and any
+  other launch/navigation failure becomes `FetchRenderError`.
+
+It is **disabled by default** like every fetcher: nothing renders unless a
+provider is explicitly constructed with it *and* the retailer feature flag and
+config `enabled` are set. To use it locally, install the browser once:
+
+```powershell
+pip install playwright
+playwright install chromium
+```
+
+If Playwright is not installed, the default renderer raises an actionable
+`FetchRenderError` rather than a bare import failure. The unit tests cover the
+fetcher and renderer entirely with fakes, so CI needs neither Playwright nor a
+browser.
+
+### Politeness, retries and proxy pool
+
+`RetryingFetcher` (`resilience.py`) wraps any `SupplierFetcher` with a per-host
+`PolitenessPolicy` (minimum interval + jitter) and bounded exponential-backoff
+retries on transient failures only — timeouts, `429`/`5xx`, URL/render errors —
+never a `404` or hard `403` challenge. `detect_block_signal` labels a response
+that looks like a WAF/anti-bot interstitial. `ProxyPool` (`proxy.py`) rotates
+over healthy UK-egress `ProxyEndpoint`s with consecutive-failure quarantine and
+cooldown restoration, and `ProxyEndpoint.as_config()` yields the headless
+fetcher's `proxy=` mapping. The strategy and its deferred (vendor/legal-gated)
+parts are in `docs/backend/11_ANTIBOT_AND_POLITENESS.md`. Clock, sleep and
+randomness are injected, so all of it is deterministic under test.
+
+### Drift detection
+
+`drift.py` distinguishes a parser break from a single genuinely-missing value by
+working at the batch altitude. `analyse_extracted_batch` runs structural
+canaries over a batch of `ExtractedProduct` (replaying fixtures); `analyse_job`
+runs operational checks over a real `IngestionJobResult` (failed job, low
+success rate, missing snapshot fields, non-positive prices). Both return a
+`DriftReport` with `has_breakage` / `highest_severity`; `alert_on_drift` +
+`format_drift_alert` are a thin injectable alerting seam.
+
+### Scheduling and orchestration
+
+`scheduling.py` decides which active allowlisted targets are due now from each
+target's `collection_frequency` and last-collected time (`due_targets`, time
+injected). `CollectionOrchestrator` (`orchestration.py`) runs each `ProviderRun`,
+evaluates the result for drift, routes breakages to an optional alert sink and
+returns a consolidated `OrchestrationRunResult`. A provider raising is captured
+as a critical outcome rather than aborting the run, so a daily run stays
+observable end to end.
+
 ## Database Mapping
 
 `build_ingestion_persistence_plan` converts an `IngestionJobResult` plus optional `CollectionTarget` records into row payloads for:

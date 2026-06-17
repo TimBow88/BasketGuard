@@ -1,0 +1,42 @@
+# Local development environment for BasketGuard.
+#
+# Brings up PostgreSQL (the schema source of truth) and Redis (reserved for the
+# collection scheduler/queue). Apply migrations after the database is healthy:
+#
+#   docker compose up -d db
+#   pip install -r requirements.txt
+#   python -m basketguard_shared.migrate \
+#     --database-url postgresql://basketguard:basketguard@localhost:5432/basketguard
+#
+# Nothing here collects live data; live fetching stays behind the per-retailer
+# BASKETGUARD_ENABLE_*_SCRAPER flags regardless of this environment.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: basketguard
+      POSTGRES_PASSWORD: basketguard
+      POSTGRES_DB: basketguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - basketguard_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U basketguard -d basketguard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  basketguard_pgdata:

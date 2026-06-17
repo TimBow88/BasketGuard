@@ -79,7 +79,16 @@ milestone tag has been created.
 
 Planned next milestones (tag when delivered):
 
-- None outstanding. The reconciled Linear **BasketGuard MVP** backlog is now authoritative for what's next (e.g. BAS-17 anomaly detection, gated on BAS-25; and the BAS-29 live-collection & operational-hardening epic).
+- **BAS-29 live-collection & operational-hardening epic** — substantially
+  delivered. Shipped: headless fetcher (BAS-30), request-politeness + retry +
+  proxy pool (BAS-31/BAS-33), scraper-drift detection + alerting (BAS-38),
+  collection scheduling + daily-run orchestration (BAS-40), backend runtime
+  foundation — settings, migration runner, Docker Compose, dependency manifest
+  (BAS-43), API edge hardening (BAS-45) and the postcode strategy (BAS-36).
+  Outstanding in the epic: observability (BAS-44) and the CI gate (BAS-63),
+  tracked separately. Tag a `milestone-014-live-collection-hardening` once the
+  epic PR merges and the suite passes.
+- BAS-17 anomaly detection, gated on BAS-25.
 
 ## Milestone Closeout Procedure
 

@@ -4,12 +4,13 @@
 
 - [x] FastAPI app exists (`services/api/`).
 - [x] `/health` endpoint exists.
-- [ ] Settings module exists.
+- [x] Settings module exists (`basketguard_shared.settings.Settings`).
 - [x] PostgreSQL connection helper exists for local persistence command.
-- [ ] Raw SQL migrations run.
+- [x] Migration runner applies raw SQL migrations (`python -m basketguard_shared.migrate`, `schema_migrations` ledger).
 - [ ] Pytest runs locally.
 - [x] Gated live PostgreSQL integration test exists for repository upserts.
-- [ ] Docker Compose exists for local Postgres/Redis if required.
+- [x] Docker Compose exists for local Postgres/Redis (`docker-compose.yml`).
+- [x] Dependency manifest exists (`requirements.txt`).
 
 ## Database
 
@@ -43,7 +44,7 @@
 - [x] Unsupported supplier targets are staged as skipped attempts.
 - [x] Fetcher abstraction exists.
 - [x] urllib HTTP fetcher exists.
-- [ ] Playwright fetcher interface exists or is planned.
+- [x] Playwright headless fetcher exists (`PlaywrightSupplierFetcher`), conforming to the `SupplierFetcher` Protocol with a fixture-tested `PageRenderer` seam; disabled by default.
 - [x] Raw HTML snapshots are stored and referenced by `raw_product_snapshots.raw_payload_location`.
 - [x] Snapshot metadata is written beside local raw HTML artifacts.
 - [x] Failed fetches are recorded in `ingestion_job_targets` with error codes/messages.
@@ -163,8 +164,8 @@
 - [x] Snapshot replay is possible from local raw HTML artifacts.
 - [x] Parser versions are recorded on raw snapshot rows.
 - [ ] Equivalence group definition versions are recorded.
-- [ ] Scraper drift is detectable.
-- [ ] Failed ingestion jobs are visible.
+- [x] Scraper drift is detectable (`drift.analyse_extracted_batch` / `analyse_job`).
+- [x] Failed ingestion jobs are visible (`drift.analyse_job` flags failed/low-yield jobs; orchestrator captures provider crashes).
 
 ## MVP exit criteria
 
