@@ -57,6 +57,18 @@ from .drift import (
     analyse_job,
     format_drift_alert,
 )
+from .scheduling import (
+    FREQUENCY_INTERVALS,
+    due_targets,
+    is_due,
+    target_key,
+)
+from .orchestration import (
+    CollectionOrchestrator,
+    OrchestrationOutcome,
+    OrchestrationRunResult,
+    ProviderRun,
+)
 from .mock_provider import FixtureIngestionProvider
 from .local_persistence import (
     AllowlistedProductUrlError,
@@ -140,6 +152,14 @@ __all__ = [
     "analyse_extracted_batch",
     "analyse_job",
     "format_drift_alert",
+    "FREQUENCY_INTERVALS",
+    "due_targets",
+    "is_due",
+    "target_key",
+    "CollectionOrchestrator",
+    "OrchestrationOutcome",
+    "OrchestrationRunResult",
+    "ProviderRun",
     "GroupMatchingSummary",
     "ProductGroupMatch",
     "candidate_from_parsed_product",
