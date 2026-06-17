@@ -10,6 +10,13 @@ from .migrations import (
     MigrationRunner,
     discover_migrations,
 )
+from .postcode import (
+    MVP_DEFAULT_POSTCODE_CONTEXT,
+    PostcodeConsistencyError,
+    assert_consistent_postcode,
+    is_uk_postcode,
+    normalise_postcode_context,
+)
 
 __all__ = [
     "DATABASE_URL_ENV",
@@ -20,4 +27,9 @@ __all__ = [
     "MigrationError",
     "MigrationRunner",
     "discover_migrations",
+    "MVP_DEFAULT_POSTCODE_CONTEXT",
+    "PostcodeConsistencyError",
+    "assert_consistent_postcode",
+    "is_uk_postcode",
+    "normalise_postcode_context",
 ]
