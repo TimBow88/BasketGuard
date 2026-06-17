@@ -47,6 +47,16 @@ from .resilience import (
     detect_block_signal,
 )
 from .proxy import ProxyEndpoint, ProxyPool, ProxyPoolError
+from .drift import (
+    DriftAlertSink,
+    DriftExpectations,
+    DriftFinding,
+    DriftReport,
+    alert_on_drift,
+    analyse_extracted_batch,
+    analyse_job,
+    format_drift_alert,
+)
 from .mock_provider import FixtureIngestionProvider
 from .local_persistence import (
     AllowlistedProductUrlError,
@@ -122,6 +132,14 @@ __all__ = [
     "ProxyEndpoint",
     "ProxyPool",
     "ProxyPoolError",
+    "DriftAlertSink",
+    "DriftExpectations",
+    "DriftFinding",
+    "DriftReport",
+    "alert_on_drift",
+    "analyse_extracted_batch",
+    "analyse_job",
+    "format_drift_alert",
     "GroupMatchingSummary",
     "ProductGroupMatch",
     "candidate_from_parsed_product",
