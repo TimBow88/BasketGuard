@@ -1,0 +1,8 @@
+# BasketGuard Ingestion service dependencies.
+
+# Headless browser automation for rendered/live fetching feasibility work.
+# Pinned to 1.56.0 because that release bundles Chromium revision 1194, which
+# matches the browser binaries pre-provisioned in the managed environment
+# (PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers). Bumping this requires a matching
+# `playwright install chromium` so the driver and browser builds stay in sync.
+playwright==1.56.0
