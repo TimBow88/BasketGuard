@@ -31,6 +31,14 @@ from .fetcher import (
     FetchUrlError,
     UrllibSupplierFetcher,
 )
+from .playwright_fetcher import (
+    PageRenderer,
+    PlaywrightPageRenderer,
+    PlaywrightSupplierFetcher,
+    RenderError,
+    RenderTimeout,
+    RenderedPage,
+)
 from .mock_provider import FixtureIngestionProvider
 from .local_persistence import (
     AllowlistedProductUrlError,
@@ -123,6 +131,12 @@ __all__ = [
     "TescoProductPageParser",
     "TescoScraperConfig",
     "UrllibSupplierFetcher",
+    "PageRenderer",
+    "PlaywrightPageRenderer",
+    "PlaywrightSupplierFetcher",
+    "RenderError",
+    "RenderTimeout",
+    "RenderedPage",
     "SavePlanResult",
     "build_ingestion_persistence_plan",
     "load_collection_targets",

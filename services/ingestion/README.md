@@ -63,7 +63,8 @@ attempts continue to be recorded in `ingestion_job_targets`. The fixture
 Supplier network access goes through a small fetcher boundary:
 
 - `SupplierFetcher` defines the interface;
-- `UrllibSupplierFetcher` is the current HTTP implementation;
+- `UrllibSupplierFetcher` is the plain-HTTP implementation;
+- `PlaywrightSupplierFetcher` is the headless-browser implementation;
 - `FetchResponse` preserves status, headers and response body separately;
 - `FetchError` subclasses represent HTTP status errors, timeouts and URL/network failures.
 
@@ -71,6 +72,37 @@ Supplier network access goes through a small fetcher boundary:
 attempt errors such as `timeout`, `http_404`, `http_429` and `url_error` into
 `ingestion_job_targets` via the existing mapping layer. Live fetching remains
 disabled unless both the provider config and the retailer feature flag allow it.
+
+### Rendered Fetching (Playwright)
+
+Some retailers only expose the title/price after client-side rendering, where a
+plain-HTTP fetch sees an empty shell. `PlaywrightSupplierFetcher` is a drop-in
+`SupplierFetcher` that renders the page in headless Chromium and returns the
+post-JavaScript DOM, mapping outcomes onto the same `FetchResponse`/`FetchError`
+taxonomy:
+
+- a rendered page becomes a `FetchResponse` with `page.content()` as the body;
+- an HTTP `>= 400` status (including a `403`/`429` bot challenge) becomes
+  `FetchHttpStatusError`, preserving the challenge body for later block-signal
+  analysis;
+- navigation timeouts become `FetchTimeoutError`; launch/navigation failures
+  become `FetchUrlError`.
+
+It performs no bot-protection evasion: a challenge is recorded and collection
+stops. Inject it into any provider via the config `fetcher` field, e.g.
+`TescoScraperConfig(..., fetcher=PlaywrightSupplierFetcher())`.
+
+Playwright is an optional dependency (`services/ingestion/requirements.txt`,
+pinned to the environment's bundled Chromium build) and is imported lazily, so
+the package still imports without the browser stack installed. The rendering
+logic is isolated behind an injectable `PageRenderer`, so unit tests exercise
+the error mapping without a browser. Real end-to-end checks live in
+`tests/test_playwright_fetcher.py` behind a flag:
+
+```bash
+pip install playwright && playwright install chromium
+BASKETGUARD_RUN_PLAYWRIGHT_LIVE=1 python -m unittest tests.test_playwright_fetcher
+```
 
 ## Database Mapping
 
