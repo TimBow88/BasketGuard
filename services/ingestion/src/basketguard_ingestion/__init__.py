@@ -48,6 +48,13 @@ from .resilience import (
 )
 from .proxy import ProxyEndpoint, ProxyPool, ProxyPoolError
 from .live_fetcher import DEFAULT_LIVE_HEADERS, build_live_fetcher
+from .feasibility_spike import (
+    FeasibilitySpike,
+    MAX_SPIKE_TARGETS,
+    SpikeAttempt,
+    SpikeReport,
+    SpikeTarget,
+)
 from .drift import (
     DriftAlertSink,
     DriftExpectations,
@@ -147,6 +154,11 @@ __all__ = [
     "ProxyPoolError",
     "DEFAULT_LIVE_HEADERS",
     "build_live_fetcher",
+    "FeasibilitySpike",
+    "MAX_SPIKE_TARGETS",
+    "SpikeAttempt",
+    "SpikeReport",
+    "SpikeTarget",
     "DriftAlertSink",
     "DriftExpectations",
     "DriftFinding",

@@ -90,6 +90,20 @@ review (BAS-26 / BAS-46), not by escalating into evasion. Decision sequence:
    better source.
 2. Run a small, rate-limited spike with `build_live_fetcher` against a handful
    of allowlisted URLs per retailer; record block rate via `detect_block_signal`.
+   The harness is built (`feasibility_spike.py`) and gated behind a CLI that
+   refuses unless **all three** of `--live`, `--i-have-legal-signoff` and
+   `BASKETGUARD_ENABLE_LIVE_SPIKE=1` are set, with a hard target cap:
+
+   ```bash
+   BASKETGUARD_ENABLE_LIVE_SPIKE=1 \
+   BASKETGUARD_FETCHER_MODE=headless \
+   python -m basketguard_ingestion.run_feasibility_spike \
+       --allowlist-seed services/ingestion/fixtures/mvp_collection_targets.json \
+       --max-targets 8 --live --i-have-legal-signoff
+   ```
+
+   It prints a per-retailer rendered/blocked/error/extractable breakdown and
+   exits non-zero if every target was blocked. Do not run it before step 1.
 3. If polite collection is reliably served → proceed within those limits.
 4. If it is consistently challenged → the unblock is **commercial/legal**
    (licensed data or a ToS-compliant agreement), **not** more aggressive
