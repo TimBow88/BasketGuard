@@ -50,6 +50,17 @@ class FetchUrlError(FetchError):
         super().__init__("url_error", message)
 
 
+class FetchRenderError(FetchError):
+    """A headless render failed for a reason other than a clean HTTP status.
+
+    Covers launch/navigation failures, missing navigation responses and
+    selector waits that never resolved on a JS-rendered page.
+    """
+
+    def __init__(self, message: str, *, body: str | None = None) -> None:
+        super().__init__("render_error", message, body=body)
+
+
 class SupplierFetcher(Protocol):
     def fetch(self, url: str, *, timeout_seconds: int, user_agent: str) -> FetchResponse:
         ...

@@ -43,7 +43,7 @@
 - [x] Unsupported supplier targets are staged as skipped attempts.
 - [x] Fetcher abstraction exists.
 - [x] urllib HTTP fetcher exists.
-- [ ] Playwright fetcher interface exists or is planned.
+- [x] Playwright headless fetcher exists (`PlaywrightSupplierFetcher`), conforming to the `SupplierFetcher` Protocol with a fixture-tested `PageRenderer` seam; disabled by default.
 - [x] Raw HTML snapshots are stored and referenced by `raw_product_snapshots.raw_payload_location`.
 - [x] Snapshot metadata is written beside local raw HTML artifacts.
 - [x] Failed fetches are recorded in `ingestion_job_targets` with error codes/messages.

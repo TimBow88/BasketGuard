@@ -72,6 +72,58 @@ attempt errors such as `timeout`, `http_404`, `http_429` and `url_error` into
 `ingestion_job_targets` via the existing mapping layer. Live fetching remains
 disabled unless both the provider config and the retailer feature flag allow it.
 
+### Headless-browser fetcher
+
+Real Tesco/Asda/Sainsbury's/Morrisons product pages are JavaScript single-page
+apps behind WAF/anti-bot stacks: a plain `urllib` GET returns an empty shell or
+a challenge page. `PlaywrightSupplierFetcher` is a second `SupplierFetcher`
+implementation that drives a headless browser and returns the fully-rendered
+HTML. Because it satisfies the same `SupplierFetcher` interface, a provider opts
+into rendered fetches by passing it as the config `fetcher` — no parser change:
+
+```python
+from basketguard_ingestion import PlaywrightSupplierFetcher, TescoScraperConfig
+
+config = TescoScraperConfig(
+    allowlisted_urls=(...),
+    enabled=True,
+    fetcher=PlaywrightSupplierFetcher(wait_for_selector="[data-testid='price']"),
+)
+```
+
+Design points:
+
+- the actual browser work sits behind an injectable `PageRenderer` seam
+  (`RenderRequest` in, `RenderResult` out), so the fetcher and its error mapping
+  are unit-tested against fakes with no live network and no browser installed —
+  mirroring the injectable `opener` on `UrllibSupplierFetcher`;
+- the default `PlaywrightPageRenderer` imports Playwright **lazily** on first
+  render, so the package and test suite import fine without it;
+- `wait_until` (default `networkidle`) and an optional `wait_for_selector` make
+  the render wait for the price to hydrate; both timeouts derive from the
+  config `timeout_seconds`;
+- `proxy` and `extra_headers` hooks are accepted but default to off, ready for
+  the proxy-pool and anti-bot children of the live-collection epic to wire in
+  without changing this contract;
+- failures map onto the shared taxonomy: navigation/selector timeouts become
+  `FetchTimeoutError`, a rendered error status (e.g. a `403` challenge page)
+  becomes `FetchHttpStatusError` with the challenge body preserved, and any
+  other launch/navigation failure becomes `FetchRenderError`.
+
+It is **disabled by default** like every fetcher: nothing renders unless a
+provider is explicitly constructed with it *and* the retailer feature flag and
+config `enabled` are set. To use it locally, install the browser once:
+
+```powershell
+pip install playwright
+playwright install chromium
+```
+
+If Playwright is not installed, the default renderer raises an actionable
+`FetchRenderError` rather than a bare import failure. The unit tests cover the
+fetcher and renderer entirely with fakes, so CI needs neither Playwright nor a
+browser.
+
 ## Database Mapping
 
 `build_ingestion_persistence_plan` converts an `IngestionJobResult` plus optional `CollectionTarget` records into row payloads for:

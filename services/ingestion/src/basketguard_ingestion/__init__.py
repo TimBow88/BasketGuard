@@ -26,10 +26,19 @@ from .group_matching import (
 from .fetcher import (
     FetchError,
     FetchHttpStatusError,
+    FetchRenderError,
     FetchResponse,
     FetchTimeoutError,
     FetchUrlError,
+    SupplierFetcher,
     UrllibSupplierFetcher,
+)
+from .headless_fetcher import (
+    PageRenderer,
+    PlaywrightPageRenderer,
+    PlaywrightSupplierFetcher,
+    RenderRequest,
+    RenderResult,
 )
 from .mock_provider import FixtureIngestionProvider
 from .local_persistence import (
@@ -89,9 +98,16 @@ __all__ = [
     "ProductExtractor",
     "FetchError",
     "FetchHttpStatusError",
+    "FetchRenderError",
     "FetchResponse",
     "FetchTimeoutError",
     "FetchUrlError",
+    "SupplierFetcher",
+    "PageRenderer",
+    "PlaywrightPageRenderer",
+    "PlaywrightSupplierFetcher",
+    "RenderRequest",
+    "RenderResult",
     "GroupMatchingSummary",
     "ProductGroupMatch",
     "candidate_from_parsed_product",
