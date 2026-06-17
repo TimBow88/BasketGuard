@@ -73,6 +73,28 @@ commercial decision):** the actual provider (datacentre → residential/ISP
 escalation), credentials management via secrets, and per-retailer sticky
 sessions for multi-step journeys.
 
+## Live-collection readiness & go/no-go
+
+`build_live_fetcher` (`live_fetcher.py`) assembles the defensible-maximum live
+fetcher: a headless render behind a UK proxy with honest locale headers,
+per-host politeness and bounded retries, configured from `Settings`. This is the
+*wiring* — necessary, but **not** proof that collection works.
+
+Whether a polite headless client is actually served (vs challenged) is an
+empirical, per-retailer question. It must be answered by a **controlled,
+authorised feasibility spike**, gated behind the data-source & claim-safety
+review (BAS-26 / BAS-46), not by escalating into evasion. Decision sequence:
+
+1. Complete the BAS-26 / BAS-46 review — confirm what each retailer's ToS and
+   the relevant law allow, and whether licensed/official data feeds are the
+   better source.
+2. Run a small, rate-limited spike with `build_live_fetcher` against a handful
+   of allowlisted URLs per retailer; record block rate via `detect_block_signal`.
+3. If polite collection is reliably served → proceed within those limits.
+4. If it is consistently challenged → the unblock is **commercial/legal**
+   (licensed data or a ToS-compliant agreement), **not** more aggressive
+   scraping. Do not treat fingerprint/CAPTCHA evasion as the fallback.
+
 ## Explicitly out of scope here
 
 * CAPTCHA-solving services.

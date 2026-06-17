@@ -47,6 +47,7 @@ from .resilience import (
     detect_block_signal,
 )
 from .proxy import ProxyEndpoint, ProxyPool, ProxyPoolError
+from .live_fetcher import DEFAULT_LIVE_HEADERS, build_live_fetcher
 from .drift import (
     DriftAlertSink,
     DriftExpectations,
@@ -144,6 +145,8 @@ __all__ = [
     "ProxyEndpoint",
     "ProxyPool",
     "ProxyPoolError",
+    "DEFAULT_LIVE_HEADERS",
+    "build_live_fetcher",
     "DriftAlertSink",
     "DriftExpectations",
     "DriftFinding",
