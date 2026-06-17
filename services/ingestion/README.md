@@ -104,6 +104,50 @@ pip install playwright && playwright install chromium
 BASKETGUARD_RUN_PLAYWRIGHT_LIVE=1 python -m unittest tests.test_playwright_fetcher
 ```
 
+## Feasibility Spike
+
+`FeasibilitySpike` answers one question empirically: **is polite live collection
+viable, or is the unblock the licensed-data route?** It makes at most one polite
+request per allowlisted target through the injected fetcher (the
+`build_live_fetcher` stack, i.e. `PlaywrightSupplierFetcher`) and classifies each
+outcome:
+
+- `rendered` — a page came back; it then runs the retailer extractor so the
+  report distinguishes "a 200" from a real title+price (`extractable`);
+- `blocked` — a `403`/`429`, or a challenge-body signature (`detect_block_signal`);
+- `error` — timeout / network / render failure.
+
+It reports a per-retailer `rendered`/`blocked`/`error`/`extractable` breakdown and
+an overall `block_rate`. There is **no evasion**: one request per target, a
+challenge is recorded and it stops.
+
+`run_feasibility_spike` is the only path to live requests and refuses unless all
+three gates are present, checking them **before** any target is loaded or the
+fetcher is built (so an unauthorised call touches no network):
+
+1. `--live`;
+2. `--i-have-legal-signoff` (BAS-26/BAS-46 cleared);
+3. `BASKETGUARD_ENABLE_LIVE_SPIKE=1`.
+
+A hard cap (`MAX_SPIKE_TARGETS=25`) refuses oversized runs rather than silently
+truncating. Without the gates the CLI prints exactly what is missing and exits
+`2`.
+
+```bash
+export PYTHONPATH="services/ingestion/src:packages/product-normalisation/src"
+export BASKETGUARD_ENABLE_LIVE_SPIKE=1
+python -m basketguard_ingestion.feasibility_spike \
+  --allowlist-seed services/ingestion/fixtures/mvp_collection_targets.json \
+  --retailer Tesco \
+  --max-targets 10 \
+  --live \
+  --i-have-legal-signoff
+```
+
+Read the result as a go/no-go: a low `block_rate` with high `extractable` means
+polite collection is viable; if everything is blocked, the unblock is the
+licensed/official-data route, not a more aggressive scraper.
+
 ## Database Mapping
 
 `build_ingestion_persistence_plan` converts an `IngestionJobResult` plus optional `CollectionTarget` records into row payloads for:
