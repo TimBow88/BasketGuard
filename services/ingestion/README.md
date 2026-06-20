@@ -63,7 +63,8 @@ attempts continue to be recorded in `ingestion_job_targets`. The fixture
 Supplier network access goes through a small fetcher boundary:
 
 - `SupplierFetcher` defines the interface;
-- `UrllibSupplierFetcher` is the current HTTP implementation;
+- `UrllibSupplierFetcher` is the plain-HTTP implementation;
+- `PlaywrightSupplierFetcher` is the headless-browser implementation;
 - `FetchResponse` preserves status, headers and response body separately;
 - `FetchError` subclasses represent HTTP status errors, timeouts and URL/network failures.
 
@@ -71,6 +72,93 @@ Supplier network access goes through a small fetcher boundary:
 attempt errors such as `timeout`, `http_404`, `http_429` and `url_error` into
 `ingestion_job_targets` via the existing mapping layer. Live fetching remains
 disabled unless both the provider config and the retailer feature flag allow it.
+
+### Rendered Fetching (Playwright)
+
+Some retailers only expose the title/price after client-side rendering, where a
+plain-HTTP fetch sees an empty shell. `PlaywrightSupplierFetcher` is a drop-in
+`SupplierFetcher` that renders the page in headless Chromium and returns the
+post-JavaScript DOM, mapping outcomes onto the same `FetchResponse`/`FetchError`
+taxonomy:
+
+- a rendered page becomes a `FetchResponse` with `page.content()` as the body;
+- an HTTP `>= 400` status (including a `403`/`429` bot challenge) becomes
+  `FetchHttpStatusError`, preserving the challenge body for later block-signal
+  analysis;
+- navigation timeouts become `FetchTimeoutError`; launch/navigation failures
+  become `FetchUrlError`.
+
+It performs no bot-protection evasion: a challenge is recorded and collection
+stops. Inject it into any provider via the config `fetcher` field, e.g.
+`TescoScraperConfig(..., fetcher=PlaywrightSupplierFetcher())`.
+
+Playwright is an optional dependency (`services/ingestion/requirements.txt`,
+pinned to the environment's bundled Chromium build) and is imported lazily, so
+the package still imports without the browser stack installed. The rendering
+logic is isolated behind an injectable `PageRenderer`, so unit tests exercise
+the error mapping without a browser. Real end-to-end checks live in
+`tests/test_playwright_fetcher.py` behind a flag:
+
+```bash
+pip install playwright && playwright install chromium
+BASKETGUARD_RUN_PLAYWRIGHT_LIVE=1 python -m unittest tests.test_playwright_fetcher
+```
+
+## Feasibility Spike
+
+`FeasibilitySpike` answers one question empirically: **is polite live collection
+viable, or is the unblock the licensed-data route?** It makes at most one polite
+request per allowlisted target through the injected fetcher (the
+`build_live_fetcher` stack, i.e. `PlaywrightSupplierFetcher`) and classifies each
+outcome:
+
+- `rendered` — a page came back; it then runs the retailer extractor so the
+  report distinguishes "a 200" from a real title+price (`extractable`);
+- `blocked` — a `403`/`429`, or a challenge-body signature (`detect_block_signal`);
+- `error` — timeout / network / render failure;
+- `skipped` — the target was **not requested** because `robots.txt` disallowed it
+  (or could not be read).
+
+It reports a per-retailer `rendered`/`blocked`/`error`/`skipped`/`extractable`
+breakdown and an overall `block_rate` (computed over *attempted* targets, i.e.
+excluding `skipped`). There is **no evasion**: one request per target, a
+challenge is recorded and it stops.
+
+**robots.txt is always honoured.** Before each target the spike consults
+`RobotsPolicy`, which reads the host's `robots.txt` once (cached per host, fetched
+as plain text via `UrllibSupplierFetcher` — no browser). A disallowed path is
+recorded as `skipped` with **no page request made**. Status handling follows the
+common convention: `2xx` parses the rules; `404` (no robots.txt) allows;
+`401`/`403` disallows all; `5xx`/network errors are treated as `unavailable` and
+the target is skipped rather than guessed. There is intentionally **no flag to
+ignore robots.txt**.
+
+`run_feasibility_spike` is the only path to live requests and refuses unless all
+three gates are present, checking them **before** any target is loaded or the
+fetcher is built (so an unauthorised call touches no network):
+
+1. `--live`;
+2. `--i-have-legal-signoff` (BAS-26/BAS-46 cleared);
+3. `BASKETGUARD_ENABLE_LIVE_SPIKE=1`.
+
+A hard cap (`MAX_SPIKE_TARGETS=25`) refuses oversized runs rather than silently
+truncating. Without the gates the CLI prints exactly what is missing and exits
+`2`.
+
+```bash
+export PYTHONPATH="services/ingestion/src:packages/product-normalisation/src"
+export BASKETGUARD_ENABLE_LIVE_SPIKE=1
+python -m basketguard_ingestion.feasibility_spike \
+  --allowlist-seed services/ingestion/fixtures/mvp_collection_targets.json \
+  --retailer Tesco \
+  --max-targets 10 \
+  --live \
+  --i-have-legal-signoff
+```
+
+Read the result as a go/no-go: a low `block_rate` with high `extractable` means
+polite collection is viable; if everything is blocked, the unblock is the
+licensed/official-data route, not a more aggressive scraper.
 
 ## Database Mapping
 

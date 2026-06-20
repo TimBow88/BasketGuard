@@ -127,6 +127,12 @@ Example wording:
 
 ## Privacy risk
 
+> **Governing policy:** see `docs/14_DATA_HANDLING_AND_PRIVACY.md`. BasketGuard
+> currently retains **no personal data** and does **not** import receipts; GDPR
+> leads data-handling design. The receipt-import guidance below applies only if
+> that policy is explicitly revisited and the BAS-54 privacy baseline is met
+> first.
+
 If receipt import is used, receipts may contain:
 
 - purchase habits;
