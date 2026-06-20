@@ -18,6 +18,7 @@ from basketguard_ingestion import (  # noqa: E402
     FetchTimeoutError,
     LIVE_SPIKE_FEATURE_FLAG,
     MAX_SPIKE_TARGETS,
+    RobotsDecision,
     SpikeNotAuthorisedError,
     SpikeTargetCapError,
     detect_block_signal,
@@ -75,6 +76,29 @@ def _ok(url: str, body: str = "<html>ok</html>") -> FetchResponse:
     return FetchResponse(url=url, status_code=200, body=body, headers={})
 
 
+class _FakeRobots:
+    """Robots policy that returns canned decisions per URL (default: allow)."""
+
+    def __init__(
+        self,
+        decisions: dict[str, RobotsDecision] | None = None,
+        *,
+        default_allowed: bool = True,
+    ) -> None:
+        self._decisions = decisions or {}
+        self._default = default_allowed
+        self.calls: list[str] = []
+
+    def is_allowed(self, url: str, user_agent: str) -> RobotsDecision:
+        self.calls.append(url)
+        if url in self._decisions:
+            return self._decisions[url]
+        return RobotsDecision(self._default, "allowed" if self._default else "disallowed")
+
+
+_ALLOW_ALL = _FakeRobots()
+
+
 class DetectBlockSignalTests(unittest.TestCase):
     def test_detects_known_signature_case_insensitively(self) -> None:
         self.assertEqual(detect_block_signal("Please solve the CAPTCHA"), "captcha")
@@ -92,6 +116,7 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
         spike = FeasibilitySpike(
             fetcher,
             extractors={"tesco": _StubExtractor(title="Cornflakes 500g", price="£1.50")},
+            robots_policy=_ALLOW_ALL,
             sleep=lambda _seconds: None,
         )
 
@@ -111,6 +136,7 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
         spike = FeasibilitySpike(
             fetcher,
             extractors={"tesco": _StubExtractor(title="Has title", price=None)},
+            robots_policy=_ALLOW_ALL,
             sleep=lambda _seconds: None,
         )
 
@@ -123,7 +149,9 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
     def test_challenge_body_on_200_is_blocked(self) -> None:
         url = "https://shop.example/p/3"
         fetcher = _MappedFetcher({url: _ok(url, "<html>Please complete the captcha</html>")})
-        spike = FeasibilitySpike(fetcher, extractors={}, sleep=lambda _seconds: None)
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _seconds: None,
+        )
 
         result = spike.run([_target("Asda", url)]).results[0]
 
@@ -135,7 +163,9 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
         fetcher = _MappedFetcher(
             {url: FetchHttpStatusError(403, "Forbidden", body="denied")},
         )
-        spike = FeasibilitySpike(fetcher, extractors={}, sleep=lambda _seconds: None)
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _seconds: None,
+        )
 
         result = spike.run([_target("Tesco", url)]).results[0]
 
@@ -146,7 +176,9 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
     def test_timeout_is_error(self) -> None:
         url = "https://shop.example/p/5"
         fetcher = _MappedFetcher({url: FetchTimeoutError("render timed out")})
-        spike = FeasibilitySpike(fetcher, extractors={}, sleep=lambda _seconds: None)
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _seconds: None,
+        )
 
         result = spike.run([_target("Tesco", url)]).results[0]
 
@@ -164,6 +196,7 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
         spike = FeasibilitySpike(
             fetcher,
             extractors={"tesco": _StubExtractor(title="T", price="£2")},
+            robots_policy=_ALLOW_ALL,
             sleep=lambda _seconds: None,
         )
 
@@ -192,11 +225,72 @@ class FeasibilitySpikeRunTests(unittest.TestCase):
     def test_one_request_per_target_no_retry(self) -> None:
         url = "https://shop.example/p/6"
         fetcher = _MappedFetcher({url: FetchHttpStatusError(403, "Forbidden", body="x")})
-        spike = FeasibilitySpike(fetcher, extractors={}, sleep=lambda _seconds: None)
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _seconds: None,
+        )
 
         spike.run([_target("Tesco", url)])
 
         self.assertEqual(fetcher.calls, [url])
+
+
+class FeasibilitySpikeRobotsTests(unittest.TestCase):
+    def test_robots_disallowed_skips_without_request(self) -> None:
+        url = "https://shop.example/p/7"
+        fetcher = _MappedFetcher({})  # raises KeyError if fetch is ever attempted
+        robots = _FakeRobots({url: RobotsDecision(False, "disallowed")})
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=robots, sleep=lambda _s: None,
+        )
+
+        result = spike.run([_target("Tesco", url)]).results[0]
+
+        self.assertEqual(result.outcome, "skipped")
+        self.assertEqual(result.detail, "robots_disallowed")
+        self.assertEqual(fetcher.calls, [])  # never requested the page
+
+    def test_robots_unavailable_skips_without_request(self) -> None:
+        url = "https://shop.example/p/8"
+        fetcher = _MappedFetcher({})
+        robots = _FakeRobots({url: RobotsDecision(False, "unavailable")})
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=robots, sleep=lambda _s: None,
+        )
+
+        result = spike.run([_target("Tesco", url)]).results[0]
+
+        self.assertEqual(result.outcome, "skipped")
+        self.assertEqual(result.detail, "robots_unavailable")
+        self.assertEqual(fetcher.calls, [])
+
+    def test_block_rate_excludes_skipped_from_denominator(self) -> None:
+        allowed = "https://shop.example/ok"
+        blocked = "https://shop.example/blocked"
+        disallowed = "https://shop.example/secret"
+        fetcher = _MappedFetcher(
+            {
+                allowed: _ok(allowed),
+                blocked: FetchHttpStatusError(403, "Forbidden", body="x"),
+            },
+        )
+        robots = _FakeRobots({disallowed: RobotsDecision(False, "disallowed")})
+        spike = FeasibilitySpike(
+            fetcher, extractors={}, robots_policy=robots, sleep=lambda _s: None,
+        )
+
+        report = spike.run(
+            [
+                _target("Tesco", allowed),
+                _target("Tesco", blocked),
+                _target("Tesco", disallowed),
+            ],
+        )
+
+        self.assertEqual(report.target_count, 3)
+        self.assertEqual(report.skipped_count, 1)
+        self.assertEqual(report.attempted_count, 2)
+        # 1 blocked of 2 attempted (the skipped target is not in the denominator).
+        self.assertEqual(report.block_rate, Decimal("0.50"))
 
 
 class FeasibilitySpikeGateTests(unittest.TestCase):
@@ -217,7 +311,9 @@ class FeasibilitySpikeGateTests(unittest.TestCase):
             legal_signoff=True,
             env={LIVE_SPIKE_FEATURE_FLAG: "1"},
             fetcher_factory=lambda: _SeedFetcher(),
-            spike_factory=lambda f: FeasibilitySpike(f, extractors={}, sleep=lambda _s: None),
+            spike_factory=lambda f: FeasibilitySpike(
+            f, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _s: None,
+        ),
         )
         self.assertEqual(report.target_count, 2)
 
@@ -310,7 +406,9 @@ class FeasibilitySpikeCliTests(unittest.TestCase):
             argv,
             env=env,
             fetcher_factory=self._must_not_run,
-            spike_factory=lambda f: FeasibilitySpike(f, extractors={}, sleep=lambda _s: None),
+            spike_factory=lambda f: FeasibilitySpike(
+            f, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _s: None,
+        ),
         )
 
     @staticmethod
@@ -337,7 +435,9 @@ class FeasibilitySpikeCliTests(unittest.TestCase):
             ["--allowlist-seed", self.seed, "--live", "--i-have-legal-signoff"],
             env={LIVE_SPIKE_FEATURE_FLAG: "1"},
             fetcher_factory=lambda: _SeedFetcher(),
-            spike_factory=lambda f: FeasibilitySpike(f, extractors={}, sleep=lambda _s: None),
+            spike_factory=lambda f: FeasibilitySpike(
+            f, extractors={}, robots_policy=_ALLOW_ALL, sleep=lambda _s: None,
+        ),
         )
         self.assertEqual(code, 0)
 

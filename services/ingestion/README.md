@@ -115,11 +115,23 @@ outcome:
 - `rendered` — a page came back; it then runs the retailer extractor so the
   report distinguishes "a 200" from a real title+price (`extractable`);
 - `blocked` — a `403`/`429`, or a challenge-body signature (`detect_block_signal`);
-- `error` — timeout / network / render failure.
+- `error` — timeout / network / render failure;
+- `skipped` — the target was **not requested** because `robots.txt` disallowed it
+  (or could not be read).
 
-It reports a per-retailer `rendered`/`blocked`/`error`/`extractable` breakdown and
-an overall `block_rate`. There is **no evasion**: one request per target, a
+It reports a per-retailer `rendered`/`blocked`/`error`/`skipped`/`extractable`
+breakdown and an overall `block_rate` (computed over *attempted* targets, i.e.
+excluding `skipped`). There is **no evasion**: one request per target, a
 challenge is recorded and it stops.
+
+**robots.txt is always honoured.** Before each target the spike consults
+`RobotsPolicy`, which reads the host's `robots.txt` once (cached per host, fetched
+as plain text via `UrllibSupplierFetcher` — no browser). A disallowed path is
+recorded as `skipped` with **no page request made**. Status handling follows the
+common convention: `2xx` parses the rules; `404` (no robots.txt) allows;
+`401`/`403` disallows all; `5xx`/network errors are treated as `unavailable` and
+the target is skipped rather than guessed. There is intentionally **no flag to
+ignore robots.txt**.
 
 `run_feasibility_spike` is the only path to live requests and refuses unless all
 three gates are present, checking them **before** any target is loaded or the

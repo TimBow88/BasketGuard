@@ -15,6 +15,7 @@ from .fetcher import FetchError, FetchHttpStatusError, SupplierFetcher
 from .local_persistence import DEFAULT_ALLOWLIST_SEED
 from .morrisons_provider import MorrisonsProductPageParser
 from .playwright_fetcher import PlaywrightSupplierFetcher
+from .robots import RobotsPolicy
 from .sainsburys_provider import SainsburysProductPageParser
 from .seed_loader import load_collection_targets
 from .tesco_provider import TescoProductPageParser
@@ -26,7 +27,7 @@ SPIKE_USER_AGENT = "BasketGuardResearchBot/0.1"
 DEFAULT_SPIKE_TIMEOUT_SECONDS = 20
 DEFAULT_SPIKE_DELAY_SECONDS = Decimal("2.0")
 
-SpikeOutcome = Literal["rendered", "blocked", "error"]
+SpikeOutcome = Literal["rendered", "blocked", "error", "skipped"]
 
 # Specific, branded challenge signatures. Kept narrow so a legitimate product
 # page does not trip the heuristic; this is a feasibility signal, not a WAF.
@@ -87,13 +88,20 @@ class SpikeRetailerSummary:
     rendered: int
     blocked: int
     error: int
+    skipped: int
     extractable: int
 
     @property
+    def attempted(self) -> int:
+        """Targets that were actually requested (everything but ``skipped``)."""
+
+        return self.rendered + self.blocked + self.error
+
+    @property
     def block_rate(self) -> Decimal:
-        if self.targets == 0:
+        if self.attempted == 0:
             return Decimal("0")
-        return (Decimal(self.blocked) / Decimal(self.targets)).quantize(Decimal("0.01"))
+        return (Decimal(self.blocked) / Decimal(self.attempted)).quantize(Decimal("0.01"))
 
 
 @dataclass(frozen=True)
@@ -117,14 +125,26 @@ class FeasibilitySpikeReport:
         return sum(1 for result in self.results if result.outcome == "error")
 
     @property
+    def skipped_count(self) -> int:
+        return sum(1 for result in self.results if result.outcome == "skipped")
+
+    @property
+    def attempted_count(self) -> int:
+        """Targets that were actually requested (everything but ``skipped``)."""
+
+        return self.rendered_count + self.blocked_count + self.error_count
+
+    @property
     def extractable_count(self) -> int:
         return sum(1 for result in self.results if result.extractable)
 
     @property
     def block_rate(self) -> Decimal:
-        if not self.results:
+        if self.attempted_count == 0:
             return Decimal("0")
-        return (Decimal(self.blocked_count) / Decimal(self.target_count)).quantize(Decimal("0.01"))
+        return (Decimal(self.blocked_count) / Decimal(self.attempted_count)).quantize(
+            Decimal("0.01"),
+        )
 
     def retailer_summaries(self) -> list[SpikeRetailerSummary]:
         order: list[str] = []
@@ -143,6 +163,7 @@ class FeasibilitySpikeReport:
                     rendered=sum(1 for entry in entries if entry.outcome == "rendered"),
                     blocked=sum(1 for entry in entries if entry.outcome == "blocked"),
                     error=sum(1 for entry in entries if entry.outcome == "error"),
+                    skipped=sum(1 for entry in entries if entry.outcome == "skipped"),
                     extractable=sum(1 for entry in entries if entry.extractable),
                 ),
             )
@@ -154,14 +175,15 @@ class FeasibilitySpikeReport:
             lines.append(
                 f"  {summary.retailer}: targets={summary.targets} "
                 f"rendered={summary.rendered} blocked={summary.blocked} "
-                f"error={summary.error} extractable={summary.extractable} "
-                f"block_rate={summary.block_rate}",
+                f"error={summary.error} skipped={summary.skipped} "
+                f"extractable={summary.extractable} block_rate={summary.block_rate}",
             )
         lines.append(
             "  overall: "
             f"targets={self.target_count} rendered={self.rendered_count} "
             f"blocked={self.blocked_count} error={self.error_count} "
-            f"extractable={self.extractable_count} block_rate={self.block_rate}",
+            f"skipped={self.skipped_count} extractable={self.extractable_count} "
+            f"block_rate={self.block_rate}",
         )
         return "\n".join(lines)
 
@@ -235,6 +257,7 @@ class FeasibilitySpike:
         fetcher: SupplierFetcher,
         *,
         extractors: Mapping[str, ProductExtractor] | None = None,
+        robots_policy: RobotsPolicy | None = None,
         timeout_seconds: int = DEFAULT_SPIKE_TIMEOUT_SECONDS,
         user_agent: str = SPIKE_USER_AGENT,
         request_delay_seconds: Decimal = DEFAULT_SPIKE_DELAY_SECONDS,
@@ -243,6 +266,7 @@ class FeasibilitySpike:
     ) -> None:
         self._fetcher = fetcher
         self._extractors = dict(extractors) if extractors is not None else _default_extractors()
+        self._robots_policy = robots_policy if robots_policy is not None else RobotsPolicy()
         self._timeout_seconds = timeout_seconds
         self._user_agent = user_agent
         self._request_delay_seconds = request_delay_seconds
@@ -260,6 +284,16 @@ class FeasibilitySpike:
     def _probe(self, target: CollectionTarget) -> SpikeTargetResult:
         url = target.target_url or ""
         retailer = target.retailer
+
+        robots = self._robots_policy.is_allowed(url, self._user_agent)
+        if not robots.allowed:
+            return SpikeTargetResult(
+                retailer=retailer,
+                target_url=url,
+                outcome="skipped",
+                detail=f"robots_{robots.reason}",
+            )
+
         try:
             response = self._fetcher.fetch(
                 url,

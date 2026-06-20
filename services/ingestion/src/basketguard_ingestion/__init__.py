@@ -40,6 +40,7 @@ from .playwright_fetcher import (
     RenderedPage,
 )
 from .mock_provider import FixtureIngestionProvider
+from .robots import RobotsDecision, RobotsPolicy
 from .feasibility_spike import (
     FeasibilitySpike,
     FeasibilitySpikeReport,
@@ -101,6 +102,8 @@ __all__ = [
     "FeasibilitySpikeReport",
     "LIVE_SPIKE_FEATURE_FLAG",
     "MAX_SPIKE_TARGETS",
+    "RobotsDecision",
+    "RobotsPolicy",
     "SpikeNotAuthorisedError",
     "SpikeRetailerSummary",
     "SpikeTargetCapError",
