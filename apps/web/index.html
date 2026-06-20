@@ -7,231 +7,445 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header class="app-header">
-      <div>
-        <p class="eyebrow">BasketGuard</p>
-        <h1>This week's basket warning</h1>
-      </div>
-      <div class="header-actions" aria-label="Dashboard actions">
-        <button class="icon-button" id="refreshButton" type="button" title="Refresh data" aria-label="Refresh data">↻</button>
-        <button class="icon-button" id="exportButton" type="button" title="Export manual observations" aria-label="Export manual observations">⇩</button>
-      </div>
-    </header>
-
-    <nav class="tabs" aria-label="Primary views">
-      <button class="tab is-active" type="button" data-view="overview">This Week</button>
-      <button class="tab" type="button" data-view="comparisons">Comparisons</button>
-      <button class="tab" type="button" data-view="gathering">Data Gathering</button>
-      <button class="tab" type="button" data-view="database">Database</button>
-    </nav>
-
-    <main>
-      <section class="view is-active" id="overview" aria-labelledby="overviewTitle">
-        <div class="summary-grid">
-          <article class="metric-panel">
-            <span class="metric-label">Worst retailer</span>
-            <strong id="worstRetailer">-</strong>
-            <span id="worstRetailerDetail">-</span>
-          </article>
-          <article class="metric-panel">
-            <span class="metric-label">Avoidable overspend</span>
-            <strong id="avoidableOverspend">-</strong>
-            <span>versus cheapest equivalent basket</span>
-          </article>
-          <article class="metric-panel">
-            <span class="metric-label">Tracked groups</span>
-            <strong id="trackedGroups">-</strong>
-            <span id="observationCoverage">-</span>
-          </article>
-          <article class="metric-panel">
-            <span class="metric-label">Manual captures</span>
-            <strong id="manualCaptureCount">0</strong>
-            <span>stored locally for review</span>
-          </article>
+    <div class="app-shell">
+      <aside class="side-rail" aria-label="BasketGuard navigation">
+        <div class="rail-brand">
+          <span class="brand-mark" aria-hidden="true">BG</span>
+          <div>
+            <p class="eyebrow">BasketGuard</p>
+            <strong>Price intelligence</strong>
+          </div>
         </div>
 
-        <div class="content-grid">
-          <section class="panel large-panel" aria-labelledby="overviewTitle">
+        <div class="rail-status" aria-label="Current report state">
+          <span class="status-dot" aria-hidden="true"></span>
+          <div>
+            <strong id="railStatusLabel">Fixture report</strong>
+            <span id="railStatusDetail">Loading evidence</span>
+          </div>
+        </div>
+
+        <nav class="nav-shell">
+          <div class="nav-group" aria-label="Consumer report views" role="tablist">
+            <span class="nav-label">Report</span>
+            <button class="tab is-active" type="button" role="tab" data-view="overview" aria-controls="overview" aria-selected="true"><span aria-hidden="true">●</span> This Week</button>
+            <button class="tab" type="button" role="tab" data-view="offenders" aria-controls="offenders" aria-selected="false"><span aria-hidden="true">◆</span> Worst Offenders</button>
+            <button class="tab" type="button" role="tab" data-view="comparisons" aria-controls="comparisons" aria-selected="false"><span aria-hidden="true">▦</span> Product Detail</button>
+            <button class="tab" type="button" role="tab" data-view="basket" aria-controls="basket" aria-selected="false"><span aria-hidden="true">Σ</span> Basket</button>
+            <button class="tab" type="button" role="tab" data-view="methodology" aria-controls="methodology" aria-selected="false"><span aria-hidden="true">?</span> Methodology</button>
+          </div>
+          <div class="nav-group operator-nav" aria-label="Operator views" role="tablist">
+            <span class="nav-label">Operator</span>
+            <button class="tab" type="button" role="tab" data-view="gathering" aria-controls="gathering" aria-selected="false"><span aria-hidden="true">+</span> Data Gathering</button>
+            <button class="tab" type="button" role="tab" data-view="review" aria-controls="review" aria-selected="false"><span aria-hidden="true">!</span> Review Queue</button>
+            <button class="tab" type="button" role="tab" data-view="health" aria-controls="health" aria-selected="false"><span aria-hidden="true">↻</span> Source Health</button>
+            <button class="tab" type="button" role="tab" data-view="database" aria-controls="database" aria-selected="false"><span aria-hidden="true">#</span> Database</button>
+          </div>
+        </nav>
+
+        <div class="rail-footer">
+          <span>Commercial MVP</span>
+          <strong>Evidence before claims</strong>
+        </div>
+      </aside>
+
+      <div class="workspace">
+        <header class="app-header">
+          <div class="page-title">
+            <p class="eyebrow">Decision desk</p>
+            <h1>Weekly grocery price report</h1>
+            <p>Commercial-grade view of retailer outliers, basket impact and evidence confidence.</p>
+          </div>
+          <div class="header-command">
+            <div class="header-metrics" aria-label="Report summary">
+              <div>
+                <span>Freshness</span>
+                <strong id="headerFreshness">-</strong>
+              </div>
+              <div>
+                <span>Confidence</span>
+                <strong id="headerConfidence">-</strong>
+              </div>
+              <div>
+                <span>Coverage</span>
+                <strong id="headerCoverage">-</strong>
+              </div>
+            </div>
+            <div class="header-actions" aria-label="Dashboard actions">
+              <button class="icon-button" id="refreshButton" type="button" title="Refresh data" aria-label="Refresh data">
+                <span aria-hidden="true">&#8635;</span>
+              </button>
+              <button
+                class="icon-button"
+                id="exportButton"
+                type="button"
+                title="Export manual observations"
+                aria-label="Export manual observations"
+              >
+                <span aria-hidden="true">&#8681;</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+      <main>
+        <div id="statusBanner" class="status-banner" role="status"></div>
+
+        <section class="view is-active" id="overview" aria-labelledby="overviewTitle">
+          <section class="verdict-panel" aria-labelledby="overviewTitle">
+            <div class="risk-gauge" aria-label="Top finding risk score">
+              <span class="risk-label">Risk index</span>
+              <strong id="riskIndex">-</strong>
+              <span id="riskIndexDetail">Loading top finding</span>
+            </div>
+            <div class="verdict-copy">
+              <p class="eyebrow">This week's verdict</p>
+              <h2 id="overviewTitle"><span id="weeklyVerdict">Loading report</span></h2>
+              <p id="weeklyVerdictDetail" class="lede">Checking the latest fixture-backed price observations.</p>
+              <div class="verdict-actions">
+                <button class="primary-button" id="inspectTopFindingButton" type="button">Inspect top finding</button>
+                <span id="verdictCaveat" class="small-note">Evidence-backed comparison across tracked groups.</span>
+              </div>
+            </div>
+            <div class="verdict-aside" aria-label="Report evidence summary">
+              <div>
+                <span>Data freshness</span>
+                <strong id="dataFreshness">-</strong>
+              </div>
+              <div>
+                <span>Confidence</span>
+                <strong id="confidenceBand">-</strong>
+              </div>
+            </div>
+          </section>
+
+          <div class="summary-grid">
+            <article class="metric-panel">
+              <span class="metric-label">Worst retailer</span>
+              <strong id="worstRetailer">-</strong>
+              <span id="worstRetailerDetail">-</span>
+            </article>
+            <article class="metric-panel">
+              <span class="metric-label">Avoidable overspend</span>
+              <strong id="avoidableOverspend">-</strong>
+              <span>versus cheapest equivalent basket</span>
+            </article>
+            <article class="metric-panel">
+              <span class="metric-label">Tracked groups</span>
+              <strong id="trackedGroups">-</strong>
+              <span id="observationCoverage">-</span>
+            </article>
+            <article class="metric-panel">
+              <span class="metric-label">Manual captures</span>
+              <strong id="manualCaptureCount">0</strong>
+              <span>stored locally for review</span>
+            </article>
+          </div>
+
+          <div class="content-grid">
+            <section class="panel large-panel" aria-labelledby="topFindingsTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Immediate attention</p>
+                  <h2 id="topFindingsTitle">Top findings</h2>
+                </div>
+              </div>
+              <div id="topFindingsList" class="offender-list"></div>
+            </section>
+
+            <aside class="panel" aria-labelledby="retailerTitle">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Basket view</p>
+                  <h2 id="retailerTitle">Retailer totals</h2>
+                </div>
+              </div>
+              <div id="retailerTotals" class="retailer-totals"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="offenders" aria-labelledby="offendersTitle">
+          <section class="panel">
             <div class="panel-heading">
               <div>
                 <p class="eyebrow">Ranked findings</p>
-                <h2 id="overviewTitle">Worst offenders</h2>
+                <h2 id="offendersTitle">Worst offenders</h2>
               </div>
-              <select id="retailerFilter" aria-label="Filter retailer">
-                <option value="all">All retailers</option>
-              </select>
+              <label class="compact-field">
+                <span>Retailer</span>
+                <select id="retailerFilter" aria-label="Filter retailer">
+                  <option value="all">All retailers</option>
+                </select>
+              </label>
             </div>
             <div id="offenderList" class="offender-list"></div>
           </section>
-
-          <aside class="panel" aria-labelledby="retailerTitle">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Basket view</p>
-                <h2 id="retailerTitle">Retailer totals</h2>
-              </div>
-            </div>
-            <div id="retailerTotals" class="retailer-totals"></div>
-          </aside>
-        </div>
-      </section>
-
-      <section class="view" id="comparisons" aria-labelledby="comparisonTitle">
-        <section class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Equivalent products</p>
-              <h2 id="comparisonTitle">Comparison detail</h2>
-            </div>
-            <select id="groupSelect" aria-label="Choose product group"></select>
-          </div>
-          <div class="comparison-split">
-            <div id="groupEvidence" class="evidence-stack"></div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Retailer</th>
-                    <th>Product</th>
-                    <th>Current</th>
-                    <th>Unit</th>
-                    <th>YoY</th>
-                    <th>Premium</th>
-                    <th>Score</th>
-                    <th>Verdict</th>
-                  </tr>
-                </thead>
-                <tbody id="comparisonRows"></tbody>
-              </table>
-            </div>
-          </div>
         </section>
-      </section>
 
-      <section class="view" id="gathering" aria-labelledby="gatheringTitle">
-        <div class="content-grid">
-          <section class="panel large-panel">
+        <section class="view" id="comparisons" aria-labelledby="comparisonTitle">
+          <section class="panel">
             <div class="panel-heading">
               <div>
-                <p class="eyebrow">Manual capture</p>
-                <h2 id="gatheringTitle">New price observation</h2>
+                <p class="eyebrow">Equivalent products</p>
+                <h2 id="comparisonTitle">Product detail</h2>
               </div>
-              <span class="status-pill">Local draft</span>
+              <label class="compact-field">
+                <span>Product group</span>
+                <select id="groupSelect" aria-label="Choose product group"></select>
+              </label>
             </div>
-            <form id="captureForm" class="capture-form">
-              <label>
-                Retailer
-                <select name="retailer" required></select>
-              </label>
-              <label>
-                Product group
-                <select name="groupSlug" required></select>
-              </label>
-              <label class="span-2">
-                Product name
-                <input name="productName" type="text" required placeholder="Tesco Chopped Tomatoes 400G" />
-              </label>
-              <label>
-                Shelf price
-                <input name="shelfPrice" type="number" min="0" step="0.01" required placeholder="0.55" />
-              </label>
-              <label>
-                Loyalty price
-                <input name="loyaltyPrice" type="number" min="0" step="0.01" placeholder="0.50" />
-              </label>
-              <label>
-                Unit price
-                <input name="unitPrice" type="number" min="0" step="0.0001" required placeholder="1.375" />
-              </label>
-              <label>
-                Unit basis
-                <select name="unitBasis" required>
-                  <option value="kg">kg</option>
-                  <option value="litre">litre</option>
-                  <option value="roll">roll</option>
-                  <option value="wash">wash</option>
-                  <option value="tablet">tablet</option>
-                </select>
-              </label>
-              <label>
-                Pack size value
-                <input name="packSizeValue" type="number" min="0" step="0.0001" required placeholder="400" />
-              </label>
-              <label>
-                Pack size unit
-                <input name="packSizeUnit" type="text" required placeholder="g" />
-              </label>
-              <label>
-                External product ID
-                <input name="externalProductId" type="text" placeholder="123456789" />
-              </label>
-              <label>
-                Postcode context
-                <input name="postcodeContext" type="text" placeholder="SW London" />
-              </label>
-              <label class="span-2">
-                Product URL
-                <input name="url" type="url" placeholder="https://www.example.com/product" />
-              </label>
-              <label class="span-2">
-                Promotion text
-                <input name="promotionText" type="text" placeholder="Clubcard price, Nectar price, rollback" />
-              </label>
-              <div class="form-actions span-2">
-                <button class="primary-button" type="submit">Add observation</button>
-                <button class="secondary-button" id="clearFormButton" type="button">Clear</button>
+            <div class="comparison-split">
+              <div class="detail-stack">
+                <div id="groupSummary" class="detail-summary"></div>
+                <div id="groupEvidence" class="evidence-stack"></div>
               </div>
-            </form>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Retailer</th>
+                      <th>Product</th>
+                      <th>Shelf</th>
+                      <th>Pack</th>
+                      <th>Unit</th>
+                      <th>Loyalty</th>
+                      <th>YoY</th>
+                      <th>Premium</th>
+                      <th>Score</th>
+                      <th>Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody id="comparisonRows"></tbody>
+                </table>
+              </div>
+            </div>
           </section>
+        </section>
 
-          <aside class="panel">
+        <section class="view" id="basket" aria-labelledby="basketTitle">
+          <div class="content-grid">
+            <section class="panel large-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Tracked basket</p>
+                  <h2 id="basketTitle">Basket comparison</h2>
+                </div>
+              </div>
+              <div id="basketRoute" class="route-stack"></div>
+              <div class="table-wrap compact-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Retailer</th>
+                      <th>Coverage</th>
+                      <th>Missing groups</th>
+                      <th>Basket total</th>
+                      <th>Caveat</th>
+                    </tr>
+                  </thead>
+                  <tbody id="basketCoverageRows"></tbody>
+                </table>
+              </div>
+            </section>
+            <aside class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Retailer totals</p>
+                  <h2>All retailers</h2>
+                </div>
+              </div>
+              <div id="basketRetailerTotals" class="retailer-totals"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="methodology" aria-labelledby="methodologyTitle">
+          <section class="panel">
             <div class="panel-heading">
               <div>
-                <p class="eyebrow">Collection queue</p>
-                <h2>Capture status</h2>
+                <p class="eyebrow">Trust model</p>
+                <h2 id="methodologyTitle">Methodology</h2>
               </div>
             </div>
-            <div id="captureSummary" class="capture-summary"></div>
-            <textarea id="exportPreview" readonly aria-label="Manual observation export"></textarea>
-          </aside>
-        </div>
-
-        <section class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Stored drafts</p>
-              <h2>Manual observations</h2>
+            <div class="method-grid">
+              <article class="method-card">
+                <strong>Comparable products first</strong>
+                <p>BasketGuard compares products inside defined equivalence groups, not broad supermarket categories.</p>
+              </article>
+              <article class="method-card">
+                <strong>Unit price is the anchor</strong>
+                <p>Shelf price, pack size and unit basis stay visible so large packs and loyalty pricing do not hide the comparison.</p>
+              </article>
+              <article class="method-card">
+                <strong>Scores need evidence</strong>
+                <p>Offender scores combine retailer-specific movement and current premium, then show the evidence behind the verdict.</p>
+              </article>
+              <article class="method-card">
+                <strong>Caveats stay visible</strong>
+                <p>Missing, stale or low-confidence data should reduce certainty instead of becoming a stronger claim.</p>
+              </article>
             </div>
-            <button class="secondary-button danger" id="clearCapturesButton" type="button">Clear drafts</button>
-          </div>
-          <div id="manualObservationList" class="manual-list"></div>
+          </section>
         </section>
-      </section>
 
-      <section class="view" id="database" aria-labelledby="databaseTitle">
-        <section class="panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">PostgreSQL model</p>
-              <h2 id="databaseTitle">Data gathering database</h2>
-            </div>
+        <section class="view" id="gathering" aria-labelledby="gatheringTitle">
+          <div class="content-grid">
+            <section class="panel large-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Manual capture</p>
+                  <h2 id="gatheringTitle">New price observation</h2>
+                </div>
+                <span class="status-pill info">Local draft</span>
+              </div>
+              <form id="captureForm" class="capture-form">
+                <label>
+                  Retailer
+                  <select name="retailer" required></select>
+                </label>
+                <label>
+                  Product group
+                  <select name="groupSlug" required></select>
+                </label>
+                <label class="span-2">
+                  Product name
+                  <input name="productName" type="text" required placeholder="Tesco Chopped Tomatoes 400G" />
+                </label>
+                <label>
+                  Shelf price
+                  <input name="shelfPrice" type="number" min="0" step="0.01" required placeholder="0.55" />
+                </label>
+                <label>
+                  Loyalty price
+                  <input name="loyaltyPrice" type="number" min="0" step="0.01" placeholder="0.50" />
+                </label>
+                <label>
+                  Unit price
+                  <input name="unitPrice" type="number" min="0" step="0.0001" required placeholder="1.375" />
+                </label>
+                <label>
+                  Unit basis
+                  <select name="unitBasis" required>
+                    <option value="kg">kg</option>
+                    <option value="litre">litre</option>
+                    <option value="roll">roll</option>
+                    <option value="wash">wash</option>
+                    <option value="tablet">tablet</option>
+                  </select>
+                </label>
+                <label>
+                  Pack size value
+                  <input name="packSizeValue" type="number" min="0" step="0.0001" required placeholder="400" />
+                </label>
+                <label>
+                  Pack size unit
+                  <input name="packSizeUnit" type="text" required placeholder="g" />
+                </label>
+                <label>
+                  External product ID
+                  <input name="externalProductId" type="text" placeholder="123456789" />
+                </label>
+                <label>
+                  Postcode context
+                  <input name="postcodeContext" type="text" placeholder="SW London" />
+                </label>
+                <label class="span-2">
+                  Product URL
+                  <input name="url" type="url" placeholder="https://www.example.com/product" />
+                </label>
+                <label class="span-2">
+                  Promotion text
+                  <input name="promotionText" type="text" placeholder="Clubcard price, Nectar price, rollback" />
+                </label>
+                <div class="form-actions span-2">
+                  <button class="primary-button" type="submit">Add observation</button>
+                  <button class="secondary-button" id="clearFormButton" type="button">Clear</button>
+                </div>
+              </form>
+            </section>
+
+            <aside class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Collection queue</p>
+                  <h2>Capture status</h2>
+                </div>
+              </div>
+              <div id="captureSummary" class="capture-summary"></div>
+              <textarea id="exportPreview" readonly aria-label="Manual observation export"></textarea>
+            </aside>
           </div>
-          <div class="schema-grid" id="schemaGrid"></div>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Stored drafts</p>
+                <h2>Manual observations</h2>
+              </div>
+              <button class="secondary-button danger" id="clearCapturesButton" type="button">Clear drafts</button>
+            </div>
+            <div id="manualObservationList" class="manual-list"></div>
+          </section>
         </section>
-      </section>
-    </main>
+
+        <section class="view" id="review" aria-labelledby="reviewTitle">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Quality control</p>
+                <h2 id="reviewTitle">Review queue</h2>
+              </div>
+              <span class="status-pill normal">Fixture mode</span>
+            </div>
+            <div id="reviewQueueSummary" class="method-grid"></div>
+          </section>
+        </section>
+
+        <section class="view" id="health" aria-labelledby="healthTitle">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Source operations</p>
+                <h2 id="healthTitle">Source health</h2>
+              </div>
+              <span id="sourceHealthStatus" class="status-pill info">Fixture-backed</span>
+            </div>
+            <div id="sourceHealthGrid" class="method-grid"></div>
+          </section>
+        </section>
+
+        <section class="view" id="database" aria-labelledby="databaseTitle">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">PostgreSQL model</p>
+                <h2 id="databaseTitle">Data gathering database</h2>
+              </div>
+            </div>
+            <div class="schema-grid" id="schemaGrid"></div>
+          </section>
+        </section>
+      </main>
+      </div>
+    </div>
 
     <template id="offenderTemplate">
       <article class="offender-card">
-        <div>
-          <div class="offender-title-row">
+        <div class="offender-title-row">
+          <div>
+            <span class="offender-retailer"></span>
             <strong class="offender-title"></strong>
-            <span class="score-pill"></span>
           </div>
-          <p class="offender-meta"></p>
+          <span class="score-pill"></span>
         </div>
+        <p class="offender-meta"></p>
         <div class="score-bar" aria-hidden="true"><span></span></div>
         <dl class="evidence-line"></dl>
+        <details class="why-flagged">
+          <summary>Why flagged</summary>
+          <ul></ul>
+        </details>
       </article>
     </template>
 

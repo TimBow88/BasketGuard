@@ -4,7 +4,11 @@
 
 This document is now a legacy checkpoint for the initial scaffold work. The early repo setup, initial raw SQL migrations, product normalisation utilities, analytics functions, seed fixtures, reporting scaffolds, ingestion contracts and basic web UI already exist.
 
-Active backend implementation should now follow:
+Current planning and task status now live in Linear. GitHub pull requests,
+merge history and tags are the change-control record. Use this file only as a
+historical checkpoint and milestone ledger.
+
+Active backend implementation references are:
 
 1. [Backend pipeline index](backend/00_BACKEND_PIPELINE_INDEX.md)
 2. [Backend database schema](backend/03_DATABASE_SCHEMA.md)
@@ -42,22 +46,23 @@ The following initial workplan items are complete or superseded by existing repo
 Each delivered milestone is a lightweight git tag on `main`. Only tag after the
 full test suite passes.
 
-This section is the authoritative project progress ledger. Update it in the
-same PR that delivers a milestone, after tests pass and before creating the
-matching git tag. The tag list in Git should match this table exactly.
+This section is a historical delivery ledger. It records accepted changes that
+have already moved through GitHub change control. It is not the active backlog.
+Update it only when a GitHub change intentionally creates or corrects a
+milestone tag.
 
 Progress tracking uses this order of authority:
 
-1. Git tags named `milestone-00X-short-name`.
-2. This delivered milestone table.
-3. [Backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
+1. Linear for planned/current work, issue status, priority and sequencing.
+2. GitHub pull requests, merge history and milestone tags for accepted change history.
+3. This delivered milestone table as a readable mirror of historical tags.
+4. [Backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
    for capability-level detail.
-4. [MVP delivery roadmap](backend/08_MVP_DELIVERY_ROADMAP.md) for future
-   direction and active prompt text.
+5. [MVP delivery roadmap](backend/08_MVP_DELIVERY_ROADMAP.md) for historical
+   direction and durable phase framing only.
 
-When assessing project status, treat git tags and this table as the record of
-what is delivered. Treat roadmap prompts as planned work unless a matching
-milestone tag has been created.
+When assessing project status, use Linear first. Treat roadmap prompts as
+historical planning text unless a Linear issue explicitly selects that work.
 
 | Tag | Date | Content |
 |---|---|---|
@@ -77,9 +82,10 @@ milestone tag has been created.
 
 > Numbering note: `009`–`013` reflect **merge order on `main`**, not the original plan. Migration `0004` (BAS-18) merged via PR #15 *before* the BAS-13 price-movement commit, so it takes `009` and price-movement becomes `010`. This keeps tag numbers monotonic with history. BAS-14/15/16 were committed directly to `main` (commits above), outside the PR flow.
 
-Planned next milestones (tag when delivered):
+Planned next milestones:
 
-- None outstanding. The reconciled Linear **BasketGuard MVP** backlog is now authoritative for what's next (e.g. BAS-17 anomaly detection, gated on BAS-25; and the BAS-29 live-collection & operational-hardening epic).
+- None listed here. The reconciled Linear **BasketGuard MVP** backlog is
+  authoritative for what is next.
 
 ## Milestone Closeout Procedure
 
@@ -97,17 +103,17 @@ $env:PYTHONDONTWRITEBYTECODE='1'; python -m unittest discover -s tests -v
 git status --short
 ```
 
-3. Update this file:
+3. Update this file only when creating or correcting a milestone tag:
 
 - add one row to "Delivered Milestones";
-- remove or advance the completed item from "Planned next milestones";
-- replace "Active Next Prompt" with the next milestone prompt.
+- confirm the matching Git tag;
+- avoid adding live backlog status from Linear.
 
 4. Update supporting docs when relevant:
 
 - [Backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
-- [MVP delivery roadmap](backend/08_MVP_DELIVERY_ROADMAP.md)
-- [Git workflow](13_GIT_WORKFLOW.md), if the milestone/tag list changed
+- [MVP delivery roadmap](backend/08_MVP_DELIVERY_ROADMAP.md), if phase guidance changed
+- [Git workflow](13_GIT_WORKFLOW.md), if change-control guidance changed
 
 5. Commit and merge through the normal PR flow.
 
@@ -123,13 +129,10 @@ milestone table.
 
 ## Active Next Prompt
 
-The legacy price-movement prompt is delivered (now `milestone-010-price-movement`).
-There is no single legacy "next prompt" anymore — next work is tracked in the
-reconciled Linear **BasketGuard MVP** backlog (the shared Code/Codex queue),
-routed by `agent:code` / `agent:codex` labels. Notably outstanding: the
-**BAS-29** live-collection & operational-hardening epic (headless fetcher,
-anti-bot/proxy, scheduling, runtime foundation, observability/CI) and **BAS-17**
-anomaly detection (gated on **BAS-25**).
+There is no repository-owned "next prompt" anymore. Next work is tracked in the
+reconciled Linear **BasketGuard MVP** backlog, routed by labels such as
+`agent:code` and `agent:codex`. Select work from Linear, then manage the change
+through GitHub.
 
 Source: [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
 

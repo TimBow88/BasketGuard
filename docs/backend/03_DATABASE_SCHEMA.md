@@ -8,6 +8,8 @@ Current migrations:
 
 1. `0001_initial_schema.sql` creates the UUID-based BasketGuard core schema.
 2. `0002_data_gathering_workflow.sql` adds controlled collection targets and ingestion job tracking.
+3. `0003_parser_review_and_aggregates.sql` adds review queue items and report support.
+4. `0004_review_state_and_parsed_attributes.sql` adds richer review queue state, review events and versioned parsed product attributes.
 
 Do not introduce a second parallel schema with `BIGSERIAL` IDs or alternate table names. Backend code, prompts and future migrations should extend the current UUID/raw SQL model.
 
@@ -141,28 +143,35 @@ ingestion_job_targets
 
 These replace the proposed `retailer_configs`, `scrape_runs` and `source_products` seed flow. MVP collection should start from allowlisted `collection_targets`.
 
-## Future `0003` migration candidates
+## Delivered backend extensions
 
-Add missing backend-pipeline concepts by extending the existing schema in `db/migrations/0003_*.sql`.
+The earlier `0003` candidate list has now been partly delivered:
 
-Recommended candidates:
+1. `review_queue_items`
+   Stores human review work linked to snapshots, products where available and proposed equivalence groups.
+
+2. `review_queue_events`
+   Stores the review audit trail introduced with migration `0004`.
+
+3. `parsed_product_attributes`
+   Stores versioned parser outputs for raw snapshots, introduced with migration `0004`.
+
+Future schema work must use the next unused numbered migration in
+`db/migrations/`. Do not reuse or edit `0003` or `0004` after they have been
+accepted through GitHub change control.
+
+Possible future candidates:
 
 1. `parser_versions`
-   Tracks parser release metadata beyond the current `raw_product_snapshots.parser_version` text field.
+   Tracks parser release metadata beyond the current parser version fields.
 
-2. `parsed_product_attributes`
-   Stores versioned parser outputs for each raw snapshot. This should reference `raw_product_snapshots(id)` with UUID foreign keys.
+2. `daily_equivalence_group_prices`
+   Rebuildable daily aggregate for group/retailer reporting if query-based reporting becomes too slow.
 
-3. `review_queue_items`
-   Stores human review work. It should reference `raw_product_snapshots(id)`, `products(id)` where available, and `equivalence_groups(id)` for proposed groups.
+3. Membership status extension
+   Add explicit status values to `product_group_memberships` if existing review queue state is not enough.
 
-4. `daily_equivalence_group_prices`
-   Rebuildable daily aggregate for group/retailer reporting. This should reference `equivalence_groups(id)`, `retailers(id)` and the selected `products(id)`.
-
-5. Membership status extension
-   Add explicit status values to `product_group_memberships` if `human_reviewed` plus `match_confidence` is not enough.
-
-6. Group rule versioning
+4. Group rule versioning
    Add `version`, `definition_json` and `status` fields to `equivalence_groups`, or add a child `equivalence_group_versions` table if multiple active historical definitions are needed.
 
 ## Migration policy

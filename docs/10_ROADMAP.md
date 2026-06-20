@@ -1,5 +1,10 @@
 # Roadmap
 
+This roadmap is strategic product sequencing, not the active task board.
+Linear is the single source of truth for planned work, current status,
+priority, dependencies and ownership. GitHub manages change control for
+accepted repository changes.
+
 ## Phase 0 — Discovery and validation
 
 Objective: prove the problem and define the product universe.
@@ -84,19 +89,22 @@ Objective: launch a private beta.
 
 Tasks:
 
-1. build dashboard;
-2. add watchlist;
-3. add item detail pages;
-4. create weekly report email;
-5. add basic auth;
-6. add feedback on product matches;
-7. add admin review queue.
+1. professionalise the dashboard shell and navigation using [UI professionalisation plan](14_UI_PROFESSIONALISATION_PLAN.md);
+2. build the weekly verdict, worst-offender and basket-comparison views;
+3. add product detail pages;
+4. design loading, empty, stale-data, missing-retailer and low-confidence states;
+5. add watchlist;
+6. create weekly report email;
+7. add basic auth;
+8. add feedback on product matches;
+9. add admin review queue.
 
 Exit criteria:
 
 - users can track items;
 - weekly report sends automatically;
 - users can understand and act on recommendations.
+- consumer-facing UI feels credible, responsive and evidence-backed rather than like an internal demo.
 
 ## Phase 5 — Receipt import
 

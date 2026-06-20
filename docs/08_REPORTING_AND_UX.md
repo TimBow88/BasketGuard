@@ -186,3 +186,12 @@ Avoid:
 - comparing premium against budget products;
 - using unexplained scores;
 - overclaiming legal wrongdoing.
+
+## Professional UI baseline
+
+The implementation-ready plan for making the current static UI feel like a professional MVP product surface is [UI professionalisation plan](14_UI_PROFESSIONALISATION_PLAN.md).
+
+Use that plan before changing `apps/web/`. It defines the consumer/operator navigation split, first-screen requirements, component expectations, state coverage, responsive/accessibility checks and Linear task breakdown for the UI improvement slice.
+
+The commercial-grade finish standard for the static app shell is captured in
+[Commercial UI finish plan](16_COMMERCIAL_UI_FINISH_PLAN.md).
