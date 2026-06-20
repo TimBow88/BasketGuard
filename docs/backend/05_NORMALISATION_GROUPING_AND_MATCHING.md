@@ -160,7 +160,7 @@ limited_edition
 
 Equivalence group definitions should live as structured YAML or JSON fixtures first. Persist the group identity in the existing `equivalence_groups` table, and persist product-to-group decisions in `product_group_memberships`.
 
-If group rules need to be queryable in PostgreSQL later, add `definition_json`, `version` and `status` to `equivalence_groups`, or add an `equivalence_group_versions` child table in a future `0003` migration.
+If group rules need to be queryable in PostgreSQL later, add `definition_json`, `version` and `status` to `equivalence_groups`, or add an `equivalence_group_versions` child table in a future numbered migration.
 
 Example:
 

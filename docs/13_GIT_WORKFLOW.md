@@ -250,7 +250,12 @@ Rules:
 
 ## Release Tags
 
-Use lightweight milestones until the product has deployable packages:
+GitHub manages change control through branches, pull requests, CI evidence,
+merge history and tags. Linear remains the single source of truth for planned
+work and live issue status.
+
+Use lightweight milestone tags only for accepted delivery history until the
+product has deployable packages:
 
 ```powershell
 git tag milestone-00X-short-name <commit>
@@ -259,41 +264,25 @@ git push origin --tags
 
 Only tag after tests pass.
 
-Tags created so far:
-
-```text
-milestone-001-scaffold              Initial prototype import (aac9eff)
-milestone-002-ingestion-pipeline    Ingestion persistence pipeline, Asda provider,
-                                    grouping and membership wiring (PRs #1-#4)
-milestone-003-mvp-reports           Review queue foundation and all four required
-                                    MVP query-based reports (PRs #5-#8)
-milestone-004-review-loop           Review decision functions closing the human
-                                    review loop (PR #9)
-milestone-005-multi-retailer        Sainsbury's and Morrisons fixture-backed
-                                    providers, completing four MVP retailers
-milestone-006-api-skeleton          FastAPI app with health and report endpoints
-milestone-007-review-api            HTTP approve/reject review item endpoints
-milestone-008-mvp-groups            All seven required MVP groups with fixtures
-                                    and matcher cases
-```
-
-The milestone log with content details lives in
-[docs/11_CODEX_WORKPLAN.md](11_CODEX_WORKPLAN.md) under "Delivered Milestones",
-alongside the planned next milestones.
+Do not maintain a duplicate tag list in this file. Inspect tags with
+`git tag --list "milestone-*"` and use
+[docs/11_CODEX_WORKPLAN.md](11_CODEX_WORKPLAN.md) only as a readable historical
+ledger of delivered milestones.
 
 ## Progress Tracking Procedure
 
-Use [docs/11_CODEX_WORKPLAN.md](11_CODEX_WORKPLAN.md) as the authoritative
-progress ledger. Every delivered milestone needs both:
+Use Linear as the authoritative progress ledger for active and planned work.
+Use GitHub as the accepted-change ledger. A delivered milestone, when used,
+needs both:
 
 1. a row in the "Delivered Milestones" table;
 2. a matching lightweight git tag.
 
 The supporting checklist in
 [docs/backend/10_IMPLEMENTATION_CHECKLIST.md](backend/10_IMPLEMENTATION_CHECKLIST.md)
-tracks detailed capability status. The roadmap in
+tracks durable capability detail. The roadmap in
 [docs/backend/08_MVP_DELIVERY_ROADMAP.md](backend/08_MVP_DELIVERY_ROADMAP.md)
-tracks direction and the active next prompt.
+tracks historical direction and phase framing, not the active queue.
 
 Before reporting progress, check:
 
@@ -302,10 +291,13 @@ git tag --list "milestone-*"
 python -m unittest discover -s tests -v
 ```
 
+Also check the BasketGuard project in Linear for issue status, priority and
+sequencing.
+
 If a capability exists in code but has no milestone tag, describe it as
 implemented but not milestone-recorded. If a roadmap prompt says something is
-next but a later milestone tag already exists, treat the roadmap as stale and
-update it in the next documentation pass.
+next but Linear or GitHub shows otherwise, treat the prompt as historical and
+update it through a documentation change.
 
 ## Recovery Commands
 

@@ -67,7 +67,7 @@ retire_source_product
 
 Database mapping:
 
-MVP can use `product_group_memberships.match_confidence`, `match_reason` and `human_reviewed` for simple approve/reject gating. A richer `review_queue_items` table should be added in a future `0003` migration when the UI needs queue state, reviewer notes, parser-bug flags and audit history.
+MVP review work is persisted in `review_queue_items`. Approval updates or creates the relevant `product_group_memberships` row with `human_reviewed=true`; rejection resolves the queue item and removes the proposed membership for that product/group pair. Migration `0004` adds richer queue state and `review_queue_events` for audit history.
 
 ## Decision effects
 
@@ -191,7 +191,7 @@ parser_version
 group_definition_version
 ```
 
-In the current schema, persist the minimal approved/rejected state on `product_group_memberships`. Add the full audit trail with `review_queue_items` or a companion review-decision table in migration `0003`.
+In the current schema, persist queue state on `review_queue_items`, approved report eligibility on `product_group_memberships`, and audit history in `review_queue_events`.
 
 ## Creating test fixtures from review
 

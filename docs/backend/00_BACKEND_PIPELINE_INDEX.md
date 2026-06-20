@@ -60,7 +60,7 @@ ingestion_jobs
 ingestion_job_targets
 ```
 
-Do not create parallel `source_products`, `product_snapshots`, `group_definitions`, `group_memberships`, `scrape_runs` or `retailer_configs` tables. Add missing backend-pipeline concepts with future numbered SQL migrations, starting with `0003`.
+Do not create parallel `source_products`, `product_snapshots`, `group_definitions`, `group_memberships`, `scrape_runs` or `retailer_configs` tables. Add missing backend-pipeline concepts with the next unused numbered SQL migration under `db/migrations/`.
 
 ## Main system modules
 

@@ -129,7 +129,7 @@ items in a single transaction (commit on success, rollback on failure):
 - both record the decision, optional reviewer notes and `resolved_at`;
   already-resolved or missing items raise `ReviewDecisionError`.
 
-There are no HTTP endpoints for review decisions yet.
+HTTP review decision endpoints live in `services/api`: `POST /review-items/{id}/approve` and `POST /review-items/{id}/reject`.
 
 Matched groups that are not already present from collection target seeds get
 an `equivalence_groups` row created from the definition (slug, name, unit

@@ -1,0 +1,432 @@
+{
+  "version": 1,
+  "equivalence_group_definition_version": 1,
+  "description": "Gold validation cases for the seven MVP equivalence groups. Each case is expected to pass through the normalisation parser, attribute parser, and group matcher unchanged.",
+  "quality_thresholds": {
+    "parser_field_accuracy_min": "0.95",
+    "grouping_decision_accuracy_min": "0.95",
+    "review_routing_accuracy_min": "1.00"
+  },
+  "groups": [
+    {
+      "slug": "own_brand_cornflakes_standard",
+      "cases": [
+        {
+          "id": "cornflakes_tesco_standard_500g",
+          "retailer": "Tesco",
+          "title": "Tesco Corn Flakes 500g",
+          "category": "Food Cupboard > Cereals > Cornflakes",
+          "unit_price_text": "20p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "cornflakes",
+            "exclusion_flags": [],
+            "normalised_size_value": "0.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "2",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "cornflakes_kelloggs_gluten_free",
+          "retailer": "Tesco",
+          "title": "Kellogg's Gluten Free Corn Flakes 500g",
+          "category": "Food Cupboard > Cereals > Cornflakes",
+          "unit_price_text": "50p/100g",
+          "expected": {
+            "brand_owner": "national_brand",
+            "tier": "specialist_dietary",
+            "product_type": "cornflakes",
+            "exclusion_flags": ["branded", "free_from", "gluten_free", "specialist_dietary"],
+            "normalised_size_value": "0.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "5",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "cornflakes_tesco_missing_category",
+          "retailer": "Tesco",
+          "title": "Tesco Corn Flakes 500g",
+          "category": null,
+          "unit_price_text": "20p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "cornflakes",
+            "exclusion_flags": [],
+            "normalised_size_value": "0.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "2",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:category_missing"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_porridge_oats_standard",
+      "cases": [
+        {
+          "id": "porridge_asda_standard_1kg",
+          "retailer": "Asda",
+          "title": "ASDA Porridge Oats 1kg",
+          "category": "Food Cupboard > Breakfast Cereal > Porridge",
+          "unit_price_text": "18p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "porridge_oats",
+            "exclusion_flags": [],
+            "normalised_size_value": "1",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.8",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "porridge_quaker_sachets",
+          "retailer": "Sainsbury's",
+          "title": "Quaker Porridge Oats Sachets 10 x 36g",
+          "category": "Food Cupboard > Breakfast Cereal > Porridge & Oats",
+          "unit_price_text": "80p/100g",
+          "expected": {
+            "brand_owner": "unknown",
+            "tier": "unknown",
+            "product_type": "porridge_oats",
+            "exclusion_flags": ["porridge_sachet"],
+            "normalised_size_value": "0.36",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "8",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "porridge_morrisons_large_pack",
+          "retailer": "Morrisons",
+          "title": "Morrisons Porridge Oats 2.5kg",
+          "category": "Food Cupboard > Breakfast Cereal > Porridge",
+          "unit_price_text": "13p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "porridge_oats",
+            "exclusion_flags": [],
+            "normalised_size_value": "2.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.3",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:size_out_of_range"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_spaghetti_standard",
+      "cases": [
+        {
+          "id": "spaghetti_sainsburys_standard_500g",
+          "retailer": "Sainsbury's",
+          "title": "Sainsbury's Spaghetti 500g",
+          "category": "Food Cupboard > Pasta > Spaghetti",
+          "unit_price_text": "16p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "spaghetti",
+            "exclusion_flags": [],
+            "normalised_size_value": "0.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.6",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "spaghetti_barilla",
+          "retailer": "Tesco",
+          "title": "Barilla Spaghetti 500g",
+          "category": "Food Cupboard > Pasta > Spaghetti",
+          "unit_price_text": "42p/100g",
+          "expected": {
+            "brand_owner": "unknown",
+            "tier": "unknown",
+            "product_type": "spaghetti",
+            "exclusion_flags": [],
+            "normalised_size_value": "0.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "4.2",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "spaghetti_tesco_large_pack",
+          "retailer": "Tesco",
+          "title": "Tesco Spaghetti 1.5kg",
+          "category": "Food Cupboard > Pasta > Spaghetti",
+          "unit_price_text": "15p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "spaghetti",
+            "exclusion_flags": [],
+            "normalised_size_value": "1.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.5",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:size_out_of_range"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_plain_flour_standard",
+      "cases": [
+        {
+          "id": "plain_flour_morrisons_standard_15kg",
+          "retailer": "Morrisons",
+          "title": "Morrisons Plain Flour 1.5kg",
+          "category": "Food Cupboard > Home Baking > Flour",
+          "unit_price_text": "6p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "plain_flour",
+            "exclusion_flags": [],
+            "normalised_size_value": "1.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "0.6",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "plain_flour_mcdougalls",
+          "retailer": "Asda",
+          "title": "McDougalls Plain Flour 1.1kg",
+          "category": "Food Cupboard > Home Baking > Flour",
+          "unit_price_text": "18p/100g",
+          "expected": {
+            "brand_owner": "unknown",
+            "tier": "unknown",
+            "product_type": "plain_flour",
+            "exclusion_flags": [],
+            "normalised_size_value": "1.1",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.8",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "plain_flour_tesco_large_pack",
+          "retailer": "Tesco",
+          "title": "Tesco Plain Flour 2kg",
+          "category": "Food Cupboard > Home Baking > Flour",
+          "unit_price_text": "7p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "plain_flour",
+            "exclusion_flags": [],
+            "normalised_size_value": "2",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "0.7",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:size_out_of_range"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_granulated_sugar_standard",
+      "cases": [
+        {
+          "id": "sugar_tesco_standard_1kg",
+          "retailer": "Tesco",
+          "title": "Tesco Granulated Sugar 1kg",
+          "category": "Food Cupboard > Home Baking > Sugar",
+          "unit_price_text": "95p/kg",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "granulated_sugar",
+            "exclusion_flags": [],
+            "normalised_size_value": "1",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "0.95",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "sugar_silver_spoon",
+          "retailer": "Sainsbury's",
+          "title": "Silver Spoon Granulated Sugar 1kg",
+          "category": "Food Cupboard > Home Baking > Sugar",
+          "unit_price_text": "160p/kg",
+          "expected": {
+            "brand_owner": "unknown",
+            "tier": "unknown",
+            "product_type": "granulated_sugar",
+            "exclusion_flags": [],
+            "normalised_size_value": "1",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.6",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "sugar_asda_bulk_pack",
+          "retailer": "Asda",
+          "title": "ASDA Granulated Sugar 5kg",
+          "category": "Food Cupboard > Home Baking > Sugar",
+          "unit_price_text": "82p/kg",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "granulated_sugar",
+            "exclusion_flags": [],
+            "normalised_size_value": "5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "0.82",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:size_out_of_range"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_long_grain_rice_standard",
+      "cases": [
+        {
+          "id": "rice_asda_standard_1kg",
+          "retailer": "Asda",
+          "title": "ASDA Long Grain Rice 1kg",
+          "category": "Food Cupboard > Rice, Pasta & Pulses > Rice",
+          "unit_price_text": "150p/kg",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "long_grain_rice",
+            "exclusion_flags": [],
+            "normalised_size_value": "1",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.5",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "rice_tilda_long_grain",
+          "retailer": "Tesco",
+          "title": "Tilda Long Grain Rice 1kg",
+          "category": "Food Cupboard > Rice, Pasta & Pulses > Rice",
+          "unit_price_text": "360p/kg",
+          "expected": {
+            "brand_owner": "unknown",
+            "tier": "unknown",
+            "product_type": "long_grain_rice",
+            "exclusion_flags": [],
+            "normalised_size_value": "1",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "3.6",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "rice_sainsburys_large_pack",
+          "retailer": "Sainsbury's",
+          "title": "Sainsbury's Long Grain Rice 2.5kg",
+          "category": "Food Cupboard > Rice, Pasta & Pulses > Rice",
+          "unit_price_text": "120p/kg",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "long_grain_rice",
+            "exclusion_flags": [],
+            "normalised_size_value": "2.5",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "1.2",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:size_out_of_range"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "own_brand_baked_beans_standard",
+      "cases": [
+        {
+          "id": "beans_morrisons_standard_410g",
+          "retailer": "Morrisons",
+          "title": "Morrisons Baked Beans in Tomato Sauce 410g",
+          "category": "Food Cupboard > Tins & Cans > Baked Beans",
+          "unit_price_text": "30p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "baked_beans",
+            "exclusion_flags": [],
+            "normalised_size_value": "0.41",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "3",
+            "unit_price_basis": "kg",
+            "group_outcome": "auto_match"
+          }
+        },
+        {
+          "id": "beans_heinz_standard",
+          "retailer": "Tesco",
+          "title": "Heinz Baked Beans 415g",
+          "category": "Food Cupboard > Tins & Cans > Baked Beans",
+          "unit_price_text": "60p/100g",
+          "expected": {
+            "brand_owner": "national_brand",
+            "tier": "national_brand_standard",
+            "product_type": "baked_beans",
+            "exclusion_flags": ["branded"],
+            "normalised_size_value": "0.415",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "6",
+            "unit_price_basis": "kg",
+            "group_outcome": "no_match"
+          }
+        },
+        {
+          "id": "beans_tesco_multipack",
+          "retailer": "Tesco",
+          "title": "Tesco Baked Beans in Tomato Sauce 4x410g",
+          "category": "Food Cupboard > Tins & Cans > Baked Beans",
+          "unit_price_text": "25p/100g",
+          "expected": {
+            "brand_owner": "retailer_own_label",
+            "tier": "retailer_standard",
+            "product_type": "baked_beans",
+            "exclusion_flags": [],
+            "normalised_size_value": "1.64",
+            "normalised_size_unit": "kg",
+            "unit_price_value": "2.5",
+            "unit_price_basis": "kg",
+            "group_outcome": "needs_review",
+            "reason_contains": "review:size_out_of_range"
+          }
+        }
+      ]
+    }
+  ]
+}

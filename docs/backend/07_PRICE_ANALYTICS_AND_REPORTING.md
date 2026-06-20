@@ -250,7 +250,7 @@ A group can appear in a public report only when:
 
 ### daily_group_price_job
 
-Builds daily group prices from latest observations. For MVP this can be a query or report payload. If repeated reporting needs a materialized table, add `daily_equivalence_group_prices` in a future `0003` migration.
+Builds daily group prices from latest observations. For MVP this can be a query or report payload. If repeated reporting needs a materialized table, add `daily_equivalence_group_prices` in a future numbered migration.
 
 ### retailer_gap_job
 

@@ -1,5 +1,15 @@
 # BasketGuard MVP Delivery Roadmap
 
+## Status
+
+This roadmap is durable phase guidance, not the active delivery queue. Linear
+is the single source of truth for planned work, live issue status, sequencing
+and ownership. GitHub manages change control through branches, pull requests,
+CI evidence, merge history and tags.
+
+Treat phase tasks below as product/engineering context. Select active work from
+the BasketGuard project in Linear.
+
 ## Delivery principle
 
 Build the smallest reliable price intelligence loop before expanding categories.
@@ -163,7 +173,7 @@ Allow uncertain matches to be reviewed and converted into approved/rejected fixt
 5. Update group membership after review.
 6. Record reviewer notes.
 7. Generate fixture candidates from decisions.
-8. Add `review_queue_items` in migration `0003` when richer queue/audit state is needed.
+8. Use the existing `review_queue_items` and `review_queue_events` tables for richer queue/audit state.
 
 ### Definition of done
 
@@ -243,52 +253,12 @@ Move from tracking prices to generating useful insights.
 3. App can flag pack-size reductions.
 4. Reports are evidence-linked and confidence-labelled.
 
-## Recommended immediate next action
+## Active delivery
 
-Continue Phase 4 multi-retailer coverage with a fixture-backed Morrisons
-provider, completing the four MVP retailers.
-Sainsbury's is now the third supported retailer: a fixture-backed
-provider/parser behind `SainsburysScraperConfig.enabled` plus
-`BASKETGUARD_ENABLE_SAINSBURYS_SCRAPER=1`, producing the shared
-`ExtractedProduct` contract and wired into the supplier batch dispatcher.
-The review loop is closed: `approve_review_item` and `reject_review_item`
-resolve open queue items transactionally, approval upserts a
-`human_reviewed=true` membership (making the product report-eligible) and
-rejection removes any membership while recording the decision for audit.
-All four required MVP reports now exist as query-based functions: group
-comparison (latest eligible observation per retailer, cheapest-first), group
-price history (eligible observations per retailer over a rolling day window),
-retailer gaps (cheapest vs dearest unit price per group with missing-retailer
-counts) and review-required products (open review queue items oldest-first
-with product, retailer, proposed group and snapshot evidence). The eligible
-reports share one membership eligibility predicate and exclude needs-review
-and rejected products.
-The review queue foundation exists: migration `0003` adds
-`review_queue_items`, and the ingestion persistence plan persists needs-review
-candidates as open review items (linked to product, raw snapshot and proposed
-group) instead of dropping them after the job notes count.
-The group matcher is wired into the ingestion persistence plan: auto-match
-results emit `product_group_memberships` rows with `match_confidence` and
-`match_reason`, while needs-review candidates are surfaced on the plan and in
-the ingestion job notes without being persisted.
-Equivalence group definitions for own-brand cornflakes and porridge oats now
-exist as validated JSON fixtures, and a deterministic matcher returns
-`auto_match`, `needs_review` or `no_match` with hard exclusions overriding
-score.
-The shared `ExtractedProduct` contract is now produced by both the Tesco and
-Asda parsers, with missing extraction fields flagged and an Asda
-missing-price fixture proving the parser-failure path.
-The local single-URL Tesco persistence command now proves the path from
-allowlisted URL to raw snapshot, parsed product, `price_observations` row payload
-and repository-backed PostgreSQL save. Failed fetches and parser failures are
-mapped into `ingestion_job_targets` with error codes/messages. A supplier batch
-workflow can process large explicit Tesco and Asda target seeds while staging
-unsupported suppliers as skipped attempts. Fetch behavior is now behind a
-testable urllib fetcher abstraction. A gated live PostgreSQL integration test
-verifies ordered upserts and idempotent single-product re-runs.
+Do not use this file to choose the next task. Use Linear for current priorities
+and issue status. Use GitHub pull requests and tags to verify what has been
+accepted into the repository.
 
-First Codex target:
-
-```text
-Add a fixture-backed Morrisons provider and parser. Follow the Tesco/Asda/Sainsbury's safety model exactly: MorrisonsScraperConfig.enabled plus BASKETGUARD_ENABLE_MORRISONS_SCRAPER=1, explicit allowlisted URLs only, recorded fixture HTML for parser tests, extract() returning the shared ExtractedProduct contract, parse() producing the existing record tuple, structured fetch/parse failure attempts, and supplier batch dispatcher wiring. Add positive and failure fixtures. Do not crawl categories or discover products. Tag milestone-005-multi-retailer once merged.
-```
+Historical backend delivery evidence is retained in
+[../11_CODEX_WORKPLAN.md](../11_CODEX_WORKPLAN.md). Capability detail is
+tracked in [10_IMPLEMENTATION_CHECKLIST.md](10_IMPLEMENTATION_CHECKLIST.md).

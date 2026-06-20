@@ -1,5 +1,11 @@
 # BasketGuard Codex Prompts
 
+## Status
+
+This is a historical prompt catalogue. It is useful for understanding how the
+backend was decomposed, but it is not the live delivery queue. Select active
+work from Linear, then manage the implementation through GitHub change control.
+
 ## Prompt style
 
 Use short, controlled Codex prompts.
@@ -14,7 +20,7 @@ Each prompt should:
 
 Schema guardrail:
 
-Use the existing UUID/raw SQL schema in `db/migrations/` as the source of truth. Do not introduce parallel tables named `source_products`, `product_snapshots`, `group_definitions`, `group_memberships`, `scrape_runs` or `retailer_configs`. Add missing backend concepts with a future numbered raw SQL migration, starting with `0003`.
+Use the existing UUID/raw SQL schema in `db/migrations/` as the source of truth. Do not introduce parallel tables named `source_products`, `product_snapshots`, `group_definitions`, `group_memberships`, `scrape_runs` or `retailer_configs`. Add missing backend concepts with the next unused numbered raw SQL migration.
 
 ## Prompt 1: Backend skeleton
 
@@ -79,9 +85,9 @@ Confidence: 0.93
 ## Prompt 7: Parsed attributes table
 
 ```text
-Add parsed product attributes.
+Historical prompt, delivered/superseded.
 
-Add migration `0003_parser_review_and_aggregates.sql` with UUID-based `parser_versions` and `parsed_product_attributes` tables that reference `raw_product_snapshots(id)`. Add a parser pipeline that takes an ExtractedProduct plus raw snapshot ID and stores parsed category, product_type, form, state, brand_owner, tier, flavour, coating, normalised_size, unit_basis, count, parser_confidence and exclusion_flags. Keep logic simple and deterministic. Run tests and fix failures. Summarise files changed, test result, and next recommended prompt only.
+Do not add parsed attributes to migration 0003. Versioned parsed product attributes are delivered in migration 0004. Select any follow-up parser storage work from Linear and use the next unused numbered raw SQL migration.
 ```
 
 Confidence: 0.89
@@ -139,9 +145,9 @@ Confidence: 0.88
 ## Prompt 13: Review queue foundation
 
 ```text
-Add the review queue foundation.
+Historical prompt, delivered/superseded.
 
-Extend migration `0003_parser_review_and_aggregates.sql` with a UUID-based `review_queue_items` table referencing `raw_product_snapshots(id)`, `products(id)` where available, and `equivalence_groups(id)` for proposed groups. When matcher returns needs_review, create a review item containing raw snapshot, proposed group, match score, reason and status. Add endpoints to list open review items and approve/reject a proposed `product_group_memberships` row. Add tests. Run tests and fix failures. Summarise files changed, test result, and next recommended prompt only.
+Review queue items, review decisions and HTTP approve/reject endpoints are delivered. Select any follow-up review workflow work from Linear and manage it through GitHub change control.
 ```
 
 Confidence: 0.87
@@ -171,7 +177,7 @@ Confidence: 0.84
 ```text
 Add daily group price aggregation.
 
-Extend migration `0003_parser_review_and_aggregates.sql` with a rebuildable `daily_equivalence_group_prices` table if query-based reporting is too slow. Build one row per equivalence group, retailer and date from approved/high-confidence price observations. Include selected product, min price, min unit price, median unit price, observation count, availability count, promotion count and confidence level. Add tests. Run tests and fix failures. Summarise files changed, test result, and next recommended prompt only.
+Add a rebuildable `daily_equivalence_group_prices` table with the next unused numbered raw SQL migration only if query-based reporting is too slow. Build one row per equivalence group, retailer and date from approved/high-confidence price observations. Include selected product, min price, min unit price, median unit price, observation count, availability count, promotion count and confidence level. Add tests. Run tests and fix failures. Summarise files changed, test result, and next recommended prompt only.
 ```
 
 Confidence: 0.88
@@ -181,7 +187,7 @@ Confidence: 0.88
 ```text
 Add retailer gap reporting.
 
-Create GET /reports/retailer-gaps that lists eligible equivalence groups with lowest retailer, highest retailer, absolute unit price gap, percentage unit price gap, date, confidence and missing retailer count. Use `price_observations` joins first, or `daily_equivalence_group_prices` if migration `0003` has introduced it. Add tests. Run tests and fix failures. Summarise files changed, test result, and next recommended prompt only.
+Create GET /reports/retailer-gaps that lists eligible equivalence groups with lowest retailer, highest retailer, absolute unit price gap, percentage unit price gap, date, confidence and missing retailer count. Use `price_observations` joins first, or `daily_equivalence_group_prices` if a future accepted migration introduces it. Add tests. Run tests and fix failures. Summarise files changed, test result, and next recommended prompt only.
 ```
 
 Confidence: 0.87

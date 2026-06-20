@@ -18,23 +18,30 @@ This folder contains the BasketGuard documentation pack. These documents define 
 12. [Codex workplan](11_CODEX_WORKPLAN.md)
 13. [Grouping catalogue draft](12_GROUPING_CATALOGUE_DRAFT.md)
 14. [Git workflow](13_GIT_WORKFLOW.md)
-15. [Backend pipeline pack](backend/00_BACKEND_PIPELINE_INDEX.md)
+15. [UI professionalisation plan](14_UI_PROFESSIONALISATION_PLAN.md)
+16. [Delivery governance](15_DELIVERY_GOVERNANCE.md)
+17. [Commercial UI finish plan](16_COMMERCIAL_UI_FINISH_PLAN.md)
+18. [Backend pipeline pack](backend/00_BACKEND_PIPELINE_INDEX.md)
 
 ## Progress Tracking
 
-The original scaffold workplan is retained in [Codex workplan](11_CODEX_WORKPLAN.md)
-as a completed/legacy checkpoint. Current progress is tracked by milestone tags
-and the "Delivered Milestones" table in that file.
+Linear is the single source of truth for planned work, current issue status,
+priority, ownership and delivery sequencing. GitHub manages change control
+through branches, pull requests, CI evidence, merge history and tags. Repository
+docs are durable product and engineering references, not the live backlog.
 
-To assess project status:
+Use [Delivery governance](15_DELIVERY_GOVERNANCE.md) for the operating model.
 
-1. Check delivered tags with `git tag --list "milestone-*"`.
-2. Compare them with [Codex workplan](11_CODEX_WORKPLAN.md).
-3. Use [backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
+To assess project state:
+
+1. Check the BasketGuard project and issues in Linear for active and upcoming work.
+2. Check GitHub branches, pull requests and CI for change-control status.
+3. Check delivered tags with `git tag --list "milestone-*"` when historical
+   delivery evidence is needed.
+4. Use [Codex workplan](11_CODEX_WORKPLAN.md) only as a historical milestone ledger.
+5. Use [backend implementation checklist](backend/10_IMPLEMENTATION_CHECKLIST.md)
    for capability-level detail.
-4. Use [backend MVP roadmap](backend/08_MVP_DELIVERY_ROADMAP.md) for the next
-   planned milestone.
-5. Verify with `python -m unittest discover -s tests -v`.
+6. Verify with `python -m unittest discover -s tests -v`.
 
-The active next milestone is recorded in [Codex workplan](11_CODEX_WORKPLAN.md)
-under "Active Next Prompt".
+If Linear and repository docs disagree about what is next, use Linear and update
+the docs through the normal GitHub change-control process.

@@ -33,7 +33,8 @@ price observation per retailer for one equivalence group:
 
 The query uses PostgreSQL `DISTINCT ON` per retailer ordered by
 `collected_at DESC`. Tests run against a fake DB-API connection; no live
-database is required. There are no HTTP endpoints yet.
+database is required. HTTP access is provided by the FastAPI wrapper in
+`services/api`; this package remains the reporting query/rendering layer.
 
 ## Group Price History Report
 

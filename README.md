@@ -28,7 +28,13 @@ artifacts/                     Local generated snapshots and runtime artifacts
 
 ## Documentation
 
-Start with [docs/README.md](docs/README.md). The numbered documents in `docs/` are the source of truth for the initial MVP scope and implementation sequence.
+Start with [docs/README.md](docs/README.md). The numbered documents in `docs/` define product, architecture, UX and implementation guidance.
+
+Delivery governance is defined in [docs/15_DELIVERY_GOVERNANCE.md](docs/15_DELIVERY_GOVERNANCE.md):
+
+- Linear is the single source of truth for planned work, current status, priority, ownership and delivery sequencing.
+- GitHub manages change control through branches, pull requests, CI evidence, merge history and tags.
+- Repository docs describe durable product and engineering decisions; they do not replace the live Linear backlog.
 
 Backend pipeline details live in [docs/backend/00_BACKEND_PIPELINE_INDEX.md](docs/backend/00_BACKEND_PIPELINE_INDEX.md). The existing UUID/raw SQL migrations in `db/migrations/` are the source of truth for backend storage.
 
@@ -52,9 +58,7 @@ $env:BASKETGUARD_DATABASE_URL="postgresql://basketguard:basketguard@localhost:54
 python -m unittest tests.test_postgres_integration -v
 ```
 
-Recommended next implementation task:
-
-> Build backend models and services against the existing UUID/raw SQL schema, starting with allowlisted collection targets, ingestion jobs, immutable raw snapshots, products and append-only price observations.
+For the next implementation task, use the BasketGuard project in Linear. Historical roadmap prompts in this repository are retained for context only.
 
 ## Local Ingestion Persistence
 

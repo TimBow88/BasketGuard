@@ -261,7 +261,7 @@ confidence distribution
 
 Do not replace raw observations with aggregates.
 
-For MVP, reports can query `price_observations` joined through `products`, `product_group_memberships` and `equivalence_groups`. Add a rebuildable daily aggregate table only in a future `0003` migration if the query shape needs it.
+For MVP, reports can query `price_observations` joined through `products`, `product_group_memberships` and `equivalence_groups`. Add a rebuildable daily aggregate table only in a future numbered migration if the query shape needs it.
 
 ## 11. Reports
 

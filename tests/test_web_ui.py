@@ -19,8 +19,31 @@ class WebUiAssetTests(unittest.TestCase):
 
         self.assertIn('href="./styles.css"', html)
         self.assertIn('src="./app.js"', html)
-        for view_id in ("overview", "comparisons", "gathering", "database"):
+        for view_id in (
+            "overview",
+            "offenders",
+            "comparisons",
+            "basket",
+            "methodology",
+            "gathering",
+            "review",
+            "health",
+            "database",
+        ):
             self.assertIn(f'id="{view_id}"', html)
+
+        self.assertIn('aria-label="Consumer report views"', html)
+        self.assertIn('aria-label="Operator views"', html)
+        self.assertIn('role="tablist"', html)
+        self.assertIn('role="tab"', html)
+        self.assertIn('id="statusBanner"', html)
+        self.assertIn('id="groupSummary"', html)
+        self.assertIn('id="basketCoverageRows"', html)
+        self.assertIn('class="side-rail"', html)
+        self.assertIn('class="header-metrics"', html)
+        self.assertIn('id="riskIndex"', html)
+        self.assertIn('id="headerFreshness"', html)
+        self.assertIn('id="railStatusLabel"', html)
 
     def test_javascript_fixture_reference_exists(self) -> None:
         javascript = (WEB_DIR / "app.js").read_text(encoding="utf-8")
@@ -50,6 +73,32 @@ class WebUiAssetTests(unittest.TestCase):
 
         self.assertNotIn("\n        currentUnitPrice,\n", javascript)
         self.assertIn("currentUnitPrice: item.currentUnitPrice", javascript)
+
+    def test_app_includes_professional_ui_states(self) -> None:
+        javascript = (WEB_DIR / "app.js").read_text(encoding="utf-8")
+
+        for token in (
+            "renderLoading",
+            "renderError",
+            "freshnessInfo",
+            "emptyState",
+            "switchView",
+            "basketCoverage",
+            "packLabel",
+            "detailSummary",
+            "updateRailStatus",
+        ):
+            self.assertIn(token, javascript)
+
+    def test_css_defines_focus_and_responsive_behaviour(self) -> None:
+        css = (WEB_DIR / "styles.css").read_text(encoding="utf-8")
+
+        self.assertIn(":focus-visible", css)
+        self.assertIn("@media (max-width: 640px)", css)
+        self.assertIn(".verdict-panel", css)
+        self.assertIn(".side-rail", css)
+        self.assertIn(".header-metrics", css)
+        self.assertIn(".risk-gauge", css)
 
 
 if __name__ == "__main__":
